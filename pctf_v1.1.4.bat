@@ -3,6 +3,7 @@ setlocal enabledelayedexpansion
 setlocal enableextensions
 :: === Elevation jump ===
 if "%1"=="printerExpo" (
+	set "worDir=%2"
     echo Relaunched with elevated privileges...
     goto printerExpo
 )
@@ -201,6 +202,7 @@ if "%killTasks%" equ "y" (
 	taskkill /f /im powerpnt.exe 2> nul
 ) else (
 	echo Unable to complete import; please save any open files within Chrome, Edge, Firefox, Outlook, Word, Excel or PowerPoint and try again.
+	timeout /t 15
 	exit
 )
 robocopy "%importDir%\Signatures" "C:\Users\%uName%\AppData\Roaming\Microsoft\Signatures" /E
@@ -244,13 +246,8 @@ exit
 net session >nul 2>&1
 if %errorLevel% neq 0 (
     echo Requesting administrator privileges...
-    powershell -Command "Start-Process '%~f0' -ArgumentList 'printerExpo' -Verb runAs"
+    powershell -Command "Start-Process '%~f0' -ArgumentList 'printerExpo', '%worDir%' -Verb runAs"
     exit /b
-)
-:: Skip elevation block if already elevated
-if "%1"=="elevated" (
-    shift
-    goto %1
 )
 set "DRIVER_DIR=%worDir%\Printers\Drivers"
 set "USED_LIST=%worDir%\Printers\used_drivers.txt"
@@ -300,7 +297,7 @@ for /R "%DRIVER_DIR%" %%f in (*.inf) do (
 )
 
 echo Recreating printers from config...
-powershell -NoProfile -ExecutionPolicy Bypass -Command "Import-Csv '%CONFIG_FILE%' | ForEach-Object { if (-not (Get-Printer -Name $_.Name -ErrorAction SilentlyContinue)) { if (-not (Get-PrinterPort -Name $_.PortName -ErrorAction SilentlyContinue)) { Add-PrinterPort -Name $_.PortName } if (-not (Get-PrinterDriver -Name $_.DriverName -ErrorAction SilentlyContinue)) { Add-PrinterDriver -Name $_.DriverName } Add-Printer -Name $_.Name -DriverName $_.DriverName -PortName $_.PortName; Write-Host ('Added printer: ' + $_.Name) } else { Write-Host ('Printer already exists: ' + $_.Name) } }"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "Import-Csv '%CONFIG_FILE%' | ForEach-Object { if (-not (Get-Printer -Name $_.Name -ErrorAction SilentlyContinue)) { try { if (-not (Get-PrinterPort -Name $_.PortName -ErrorAction SilentlyContinue)) { if ($_.PortName -like 'IP_*') { $ip = $_.PortName -replace '^IP_', ''; Add-PrinterPort -Name $_.PortName -PrinterHostAddress $ip } elseif ($_.PortName -like 'WSD*') { Add-PrinterPort -Name $_.PortName } else { Add-PrinterPort -Name $_.PortName } } } catch {} try { if (-not (Get-PrinterDriver -Name $_.DriverName -ErrorAction SilentlyContinue)) { Add-PrinterDriver -Name $_.DriverName } } catch {} try { Add-Printer -Name $_.Name -DriverName $_.DriverName -PortName $_.PortName; Write-Host ('Added printer: ' + $_.Name) } catch { Write-Host ('Failed to add printer: ' + $_.Name + ' Error: ' + $_.Exception.Message) } } else { Write-Host ('Printer already exists: ' + $_.Name) } }"
 
 echo.
 echo Printer import complete.
