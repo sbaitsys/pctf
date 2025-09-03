@@ -1,5 +1,20 @@
 @echo off
 setlocal enabledelayedexpansion
+setlocal enableextensions
+:: === Elevation jump ===
+if "%1"=="printerExpo" (
+    echo Relaunched with elevated privileges...
+    goto printerExpo
+)
+if "%1"=="postMDT" (
+    echo Relaunched with elevated privileges...
+    goto postMDT
+)
+if "%1"=="printerImpo" (
+    echo Relaunched with elevated privileges...
+	set "importDir=%2"
+    goto printerImpo
+)
 echo    ___  _______________
 echo   / _ \/ ___/_  __/ __/
 echo  / ___/ /__  / / / _/   
@@ -11,7 +26,7 @@ echo 1. Import current user
 echo 2. Import another user
 echo 3. Export current user
 echo 4. Export another user
-echo 5. Perform post-MDT optimizations (run as administrator)
+echo 5. Perform post-MDT optimizations
 echo.
 
 :getOptions
@@ -31,6 +46,7 @@ if "%opt%" equ "1" (
 	goto getOptions
 )
 
+
 :selectLocalUser
 set /p "uName=Type the user account you wish to export: "
 	if not exist "C:\Users\!uName!" (
@@ -47,6 +63,17 @@ set /p "uName=Type the user account you wish to export: "
 	)
 	
 :postMDT
+net session >nul 2>&1
+if %errorLevel% neq 0 (
+    echo Requesting administrator privileges...
+    powershell -Command "Start-Process '%~f0' -ArgumentList 'postMDT' -Verb runAs"
+    exit /b
+)
+:: Skip elevation block if already elevated
+if "%1"=="elevated" (
+    shift
+    goto %1
+)
 if not exist "C:\aitsys" mkdir "C:\aitsys"
 net localgroup Administrators > C:\aitsys\admin_members.txt
 for /f "skip=6 tokens=*" %%a in ('type C:\aitsys\admin_members.txt') do (
@@ -151,22 +178,7 @@ ren TranscodedWallpaper TranscodedWallpaper.jpg
 if "%dlReq%" equ "y" (
 	robocopy "C:\Users\%uName%\Downloads" "%worDir%\Downloads" /E
 )
-
-set /p opt1=Zip the export? (y/n) 
-if "%opt1%" equ "y" (
-    set "zipName=!uName!_!COMPUTERNAME!.zip"
-    for %%Z in (^< ^> ^: ^" ^| ^? ^* " ") do (
-        set "zipName=!zipName:%%Z=!"
-    )
-    echo Creating .zip archive for !zipName!..
-    cd !worDir!
-    tar.exe -a -c -f  "!worDir!\..\!zipName!" Signatures Templates Chrome Edge Firefox Wallpaper TaskbarPins WiFiProfiles Downloads .
-    cd ..
-    rmdir /s /q "!worDir!"
-    echo -=- Export complete -=-
-    echo Ensure to copy the .zip created above to the new workstation and extract the archive prior to commencing the import portion of this script.
-    timeout /t 15
-)
+goto printerExpo
 exit
 
 :importUser
@@ -207,7 +219,91 @@ powershell RUNDLL32.EXE USER32.DLL,UpdatePerUserSystemParameters ,1 ,True
 robocopy "%importDir%\Downloads" "C:\Users\%uName%\Downloads" /E
 
 start explorer.exe
+goto printerImpo
+exit
 
-echo Import complete. Closing script.
-timeout /t 5
+:zip
+set /p opt1=Zip the export? (y/n) 
+if "%opt1%" equ "y" (
+    set "zipName=!uName!_!COMPUTERNAME!.zip"
+    for %%Z in (^< ^> ^: ^" ^| ^? ^* " ") do (
+        set "zipName=!zipName:%%Z=!"
+    )
+    echo Creating .zip archive for !zipName!..
+    cd !worDir!
+    tar.exe -a -c -f  "!worDir!\..\!zipName!" Signatures Templates Chrome Edge Firefox Wallpaper TaskbarPins WiFiProfiles Downloads .
+    cd ..
+    rmdir /s /q "!worDir!"
+    echo -=- Export complete -=-
+    echo Ensure to copy the .zip created above to the new workstation and extract the archive prior to commencing the import portion of this script.
+    timeout /t 15
+)
+exit
+
+:printerExpo
+net session >nul 2>&1
+if %errorLevel% neq 0 (
+    echo Requesting administrator privileges...
+    powershell -Command "Start-Process '%~f0' -ArgumentList 'printerExpo' -Verb runAs"
+    exit /b
+)
+:: Skip elevation block if already elevated
+if "%1"=="elevated" (
+    shift
+    goto %1
+)
+set "DRIVER_DIR=%worDir%\Printers\Drivers"
+set "USED_LIST=%worDir%\Printers\used_drivers.txt"
+set "PRINTER_LIST=%worDir%\Printers\printers.txt"
+set "CONFIG_FILE=%worDir%\Printers\PrinterConfig.csv"
+
+
+echo Creating export folders..
+mkdir "%DRIVER_DIR%" >nul
+
+echo Exporting printer configurations..
+powershell -Command "Get-Printer | Where-Object { $_.Name -notmatch 'Microsoft|PDF|OneNote|Remote Desktop|Adobe' } | Export-Csv -Path '%CONFIG_FILE%' -NoTypeInformation"
+
+echo Exporting third-party drivers..
+powershell -Command "Get-PrinterDriver | Where-Object { $_.InfPath -and (Test-Path $_.InfPath) -and ($_.Name -notmatch 'Microsoft|PDF|OneNote|Remote Desktop|Adobe') } | ForEach-Object { $source = Split-Path $_.InfPath -Parent; $dest = Join-Path '%DRIVER_DIR%' $_.Name; Copy-Item -Path $source -Destination $dest -Recurse -Force }"
+
+echo All drivers exported to Drivers folder.
+
+::echo Removing un-used third-party drivers from export folder..
+::for /R "%DRIVER_DIR%" %%F in (*.inf) do (
+::    findstr /I /G:"%USED_LIST%" "%%F" >nul
+::    if errorlevel 1 (
+::        echo Removing unused driver folder: %%~dpF
+::        rmdir /S /Q "%%~dpF"
+::    )
+::)
+
+echo === Printer Export Complete ===
+goto zip
+exit
+
+:printerImpo
+net session >nul 2>&1
+if %errorLevel% neq 0 (
+    echo Requesting administrator privileges...
+    powershell -Command "Start-Process '%~f0' -ArgumentList 'printerImpo', '%importDir%' -Verb runAs"
+    exit /b
+)
+
+set DRIVER_DIR=%importDir%\Printers\Drivers
+set CONFIG_FILE=%importDir%\Printers\PrinterConfig.csv
+
+echo Adding printer drivers to driver store...
+for /R "%DRIVER_DIR%" %%f in (*.inf) do (
+    echo Installing driver: %%f
+    pnputil /add-driver "%%f" /install
+)
+
+echo Recreating printers from config...
+powershell -NoProfile -ExecutionPolicy Bypass -Command "Import-Csv '%CONFIG_FILE%' | ForEach-Object { if (-not (Get-Printer -Name $_.Name -ErrorAction SilentlyContinue)) { if (-not (Get-PrinterPort -Name $_.PortName -ErrorAction SilentlyContinue)) { Add-PrinterPort -Name $_.PortName } if (-not (Get-PrinterDriver -Name $_.DriverName -ErrorAction SilentlyContinue)) { Add-PrinterDriver -Name $_.DriverName } Add-Printer -Name $_.Name -DriverName $_.DriverName -PortName $_.PortName; Write-Host ('Added printer: ' + $_.Name) } else { Write-Host ('Printer already exists: ' + $_.Name) } }"
+
+echo.
+echo Printer import complete.
+echo Workstation Import complete. Closing script.
+timeout /t 50
 exit
