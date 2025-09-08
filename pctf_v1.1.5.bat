@@ -157,8 +157,8 @@ if errorlevel 1 set dlReq=y
 if errorlevel 2 set dlReq=n
 robocopy "C:\Users\%uName%\AppData\Roaming\Microsoft\Signatures" "%worDir%\Signatures" /E
 robocopy "C:\Users\%uName%\AppData\Roaming\Microsoft\Templates" "%worDir%\Templates" /E
-robocopy "C:\Users\%uName%\AppData\Local\Google\Chrome\User Data\Default" "%worDir%\Chrome" /E
-robocopy "C:\Users\%uName%\AppData\Local\Microsoft\Edge\User Data\Default" "%worDir%\Edge" /E
+robocopy "C:\Users\%uName%\AppData\Local\Google\Chrome\User Data\Default" "%worDir%\Chrome" /E /XD "C:\Users\%uName%\AppData\Local\Google\Chrome\User Data\Default\Service Worker" "C:\Users\%uName%\AppData\Local\Google\Chrome\User Data\Default\WebStorage" "C:\Users\%uName%\AppData\Local\Google\Chrome\User Data\Default\Cache" "C:\Users\%uName%\AppData\Local\Google\Chrome\User Data\Default\Code Cache" "C:\Users\%uName%\AppData\Local\Google\Chrome\User Data\Default\IndexedDB"
+robocopy "C:\Users\%uName%\AppData\Local\Microsoft\Edge\User Data\Default" "%worDir%\Edge" /E /XD "C:\Users\%uName%\AppData\Local\Microsoft\Edge\User Data\Default\Service Worker" "C:\Users\%uName%\AppData\Local\Microsoft\Edge\User Data\Default\WebStorage" "C:\Users\%uName%\AppData\Local\Microsoft\Edge\User Data\Default\Cache" "C:\Users\%uName%\AppData\Local\Microsoft\Edge\User Data\Default\Code Cache" "C:\Users\%uName%\AppData\Local\Microsoft\Edge\User Data\Default\IndexedDB"
 copy "C:\Users\%uName%\AppData\Roaming\Mozilla\Firefox\installs.ini" "%worDir%\Firefox" /E
 copy "C:\Users\%uName%\AppData\Roaming\Mozilla\Firefox\profiles.ini" "%worDir%\Firefox" /E
 robocopy "C:\Users\%uName%\AppData\Roaming\Mozilla\Firefox\Profiles" "%worDir%\Firefox\Profiles" /E
@@ -252,9 +252,9 @@ set "CONFIG_FILE=%worDir%\Printers\PrinterConfig.csv"
 echo Creating export folders..
 mkdir "%DRIVER_DIR%" >nul
 echo Exporting printer configurations..
-powershell -Command "Get-Printer | Where-Object { $_.Name -notmatch 'Microsoft|PDF|OneNote|Remote Desktop|Adobe' } | Export-Csv -Path '%CONFIG_FILE%' -NoTypeInformation"
+powershell -Command "Get-Printer | Where-Object { $_.Name -notmatch 'Microsoft|PDF|OneNote|Remote Desktop|Adobe' } | Export-Csv -Path \"%CONFIG_FILE%\" -NoTypeInformation"
 echo Exporting third-party drivers..
-powershell -Command "Get-PrinterDriver | Where-Object { $_.InfPath -and (Test-Path $_.InfPath) -and ($_.Name -notmatch 'Microsoft|PDF|OneNote|Remote Desktop|Adobe') } | ForEach-Object { $source = Split-Path $_.InfPath -Parent; $dest = Join-Path '%DRIVER_DIR%' $_.Name; Copy-Item -Path $source -Destination $dest -Recurse -Force }"
+powershell -Command "Get-PrinterDriver | Where-Object { $_.InfPath -and (Test-Path $_.InfPath) -and ($_.Name -notmatch 'Microsoft|PDF|OneNote|Remote Desktop|Adobe') } | ForEach-Object { $source = Split-Path $_.InfPath -Parent; $dest = Join-Path \"%DRIVER_DIR%\" $_.Name; Copy-Item -Path $source -Destination $dest -Recurse -Force }"
 echo All drivers exported to Drivers folder.
 goto zip
 exit
