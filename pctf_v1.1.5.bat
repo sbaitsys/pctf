@@ -20,7 +20,7 @@ echo   / _ \/ ___/_  __/ __/
 echo  / ___/ /__  / / / _/   
 echo /_/   \___/ /_/ /_/    
 echo.
-echo PC Transfer Tool v1.1.4 -- Developed by activIT Systems
+echo PC Transfer Tool v1.1.5 -- Developed by activIT Systems
 echo.
 echo 1. Import current user
 echo 2. Import another user
