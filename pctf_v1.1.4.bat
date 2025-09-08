@@ -26,7 +26,6 @@ echo 1. Import current user
 echo 2. Import another user
 echo 3. Export current user
 echo 4. Export another user
-echo 5. Perform post-MDT optimizations
 echo.
 
 :getOptions
@@ -39,11 +38,6 @@ if "%opt%" equ "1" (
 	goto checkLocalUser
 ) else if "%opt%" equ "4" (
 	goto selectLocalUser
-) else if "%opt%" equ "5" (
-	goto postMDT
-) else if "%opt%" equ "6" (
-	set "worDir=C:\aitsys\PrinterExpo"
-	goto printerExpo
 ) else (
 	echo "Invalid option. Please select one of the options listed above (1, 2, 3, 4 or 5)."
 	goto getOptions
@@ -91,7 +85,7 @@ for /f "skip=6 tokens=*" %%a in ('type C:\aitsys\admin_members.txt') do (
 
 :endPostMDT
 del C:\aitsys\admin_members.txt
-echo Disabled all administrator accounts (excluding currently logged in).
+echo "Disabled all administrator accounts (excluding currently logged in)."
 powershell Set-WinSystemLocale en-AU
 powershell Set-WinUserLanguageList en-AU -Force
 echo Configured English (Australia) as default language profile
@@ -99,7 +93,9 @@ netsh wlan delete profile name="activIT Systems"
 netsh wlan delete profile name="activIT Systems - Guest"
 netsh wlan delete profile name="activIT Systems - Workbench"
 echo Removed activIT Systems WiFi Profiles
-timeout /t 15
+echo.
+echo Workstation Import complete. Closing script.
+timeout /t 50
 exit
 
 :checkLocalUser
@@ -159,7 +155,6 @@ if not defined worDir goto :exportDirectory
 %SystemRoot%\System32\choice.exe /C YN /N /M "Is the Downloads folder required? (y/n) "
 if errorlevel 1 set dlReq=y
 if errorlevel 2 set dlReq=n
-
 robocopy "C:\Users\%uName%\AppData\Roaming\Microsoft\Signatures" "%worDir%\Signatures" /E
 robocopy "C:\Users\%uName%\AppData\Roaming\Microsoft\Templates" "%worDir%\Templates" /E
 robocopy "C:\Users\%uName%\AppData\Local\Google\Chrome\User Data\Default" "%worDir%\Chrome" /E
@@ -254,20 +249,13 @@ set "DRIVER_DIR=%worDir%\Printers\Drivers"
 set "USED_LIST=%worDir%\Printers\used_drivers.txt"
 set "PRINTER_LIST=%worDir%\Printers\printers.txt"
 set "CONFIG_FILE=%worDir%\Printers\PrinterConfig.csv"
-
-
 echo Creating export folders..
 mkdir "%DRIVER_DIR%" >nul
-
 echo Exporting printer configurations..
 powershell -Command "Get-Printer | Where-Object { $_.Name -notmatch 'Microsoft|PDF|OneNote|Remote Desktop|Adobe' } | Export-Csv -Path '%CONFIG_FILE%' -NoTypeInformation"
-
 echo Exporting third-party drivers..
 powershell -Command "Get-PrinterDriver | Where-Object { $_.InfPath -and (Test-Path $_.InfPath) -and ($_.Name -notmatch 'Microsoft|PDF|OneNote|Remote Desktop|Adobe') } | ForEach-Object { $source = Split-Path $_.InfPath -Parent; $dest = Join-Path '%DRIVER_DIR%' $_.Name; Copy-Item -Path $source -Destination $dest -Recurse -Force }"
-
 echo All drivers exported to Drivers folder.
-
-echo === Printer Export Complete ===
 goto zip
 exit
 
@@ -278,21 +266,13 @@ if %errorLevel% neq 0 (
     powershell -Command "Start-Process '%~f0' -ArgumentList 'printerImpo', '%importDir%' -Verb runAs"
     exit /b
 )
-
 set DRIVER_DIR=%importDir%\Printers\Drivers
 set CONFIG_FILE=%importDir%\Printers\PrinterConfig.csv
-
 echo Adding printer drivers to driver store...
 for /R "%DRIVER_DIR%" %%f in (*.inf) do (
     echo Installing driver: %%f
     pnputil /add-driver "%%f" /install
 )
-
 echo Recreating printers from config...
 powershell -NoProfile -ExecutionPolicy Bypass -Command "Import-Csv '%CONFIG_FILE%' | ForEach-Object { if (-not (Get-Printer -Name $_.Name -ErrorAction SilentlyContinue)) { try { if (-not (Get-PrinterPort -Name $_.PortName -ErrorAction SilentlyContinue)) { if ($_.PortName -like 'IP_*') { $ip = $_.PortName -replace '^IP_', ''; Add-PrinterPort -Name $_.PortName -PrinterHostAddress $ip } elseif ($_.PortName -like 'WSD*') { Add-PrinterPort -Name $_.PortName } else { Add-PrinterPort -Name $_.PortName } } } catch {} try { if (-not (Get-PrinterDriver -Name $_.DriverName -ErrorAction SilentlyContinue)) { Add-PrinterDriver -Name $_.DriverName } } catch {} try { Add-Printer -Name $_.Name -DriverName $_.DriverName -PortName $_.PortName; Write-Host ('Added printer: ' + $_.Name) } catch { Write-Host ('Failed to add printer: ' + $_.Name + ' Error: ' + $_.Exception.Message) } } else { Write-Host ('Printer already exists: ' + $_.Name) } }"
-
-echo.
-echo Printer import complete.
-echo Workstation Import complete. Closing script.
-timeout /t 50
-exit
+goto postMDT
