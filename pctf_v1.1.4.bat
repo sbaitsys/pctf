@@ -1,9 +1,8 @@
 @echo off
 setlocal enabledelayedexpansion
 setlocal enableextensions
-:: === Elevation jump ===
 if "%1"=="printerExpo" (
-	set "worDir=%2"
+    set "worDir=%2"
     echo Relaunched with elevated privileges...
     goto printerExpo
 )
@@ -42,6 +41,9 @@ if "%opt%" equ "1" (
 	goto selectLocalUser
 ) else if "%opt%" equ "5" (
 	goto postMDT
+) else if "%opt%" equ "6" (
+	set "worDir=C:\aitsys\PrinterExpo"
+	goto printerExpo
 ) else (
 	echo "Invalid option. Please select one of the options listed above (1, 2, 3, 4 or 5)."
 	goto getOptions
@@ -69,11 +71,6 @@ if %errorLevel% neq 0 (
     echo Requesting administrator privileges...
     powershell -Command "Start-Process '%~f0' -ArgumentList 'postMDT' -Verb runAs"
     exit /b
-)
-:: Skip elevation block if already elevated
-if "%1"=="elevated" (
-    shift
-    goto %1
 )
 if not exist "C:\aitsys" mkdir "C:\aitsys"
 net localgroup Administrators > C:\aitsys\admin_members.txt
@@ -165,9 +162,10 @@ if errorlevel 2 set dlReq=n
 
 robocopy "C:\Users\%uName%\AppData\Roaming\Microsoft\Signatures" "%worDir%\Signatures" /E
 robocopy "C:\Users\%uName%\AppData\Roaming\Microsoft\Templates" "%worDir%\Templates" /E
-robocopy "C:\Users\%uName%\AppData\Local\Google\Chrome\User Data" "%worDir%\Chrome" /E
-robocopy "C:\Users\%uName%\AppData\Local\Microsoft\Edge\User Data" "%worDir%\Edge" /E
-robocopy "C:\Users\%uName%\AppData\Roaming\Mozilla\Firefox\Profiles" "%worDir%\Firefox" /E
+robocopy "C:\Users\%uName%\AppData\Local\Google\Chrome\User Data\Default" "%worDir%\Chrome" /E
+robocopy "C:\Users\%uName%\AppData\Local\Microsoft\Edge\User Data\Default" "%worDir%\Edge" /E
+copy "C:\Users\%uName%\AppData\Roaming\Mozilla\Firefox\installs.ini" "%worDir%\Firefox" /E
+robocopy "C:\Users\%uName%\AppData\Roaming\Mozilla\Firefox\Profiles" "%worDir%\Firefox\Profiles" /E
 robocopy "C:\Users\%uName%\AppData\Roaming\Microsoft\Windows\Themes" "%worDir%\Wallpaper" /E
 robocopy "C:\Users\%uName%\AppData\Roaming\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar" "%worDir%\TaskbarPins" /E
 if not exist "%worDir%\WiFiProfiles" (
@@ -207,16 +205,17 @@ if "%killTasks%" equ "y" (
 )
 robocopy "%importDir%\Signatures" "C:\Users\%uName%\AppData\Roaming\Microsoft\Signatures" /E
 robocopy "%importDir%\Templates" "C:\Users\%uName%\AppData\Roaming\Microsoft\Templates" /E
-robocopy "%importDir%\Chrome" "C:\Users\%uName%\AppData\Local\Google\Chrome\User Data" /E
-robocopy "%importDir%\Edge" "C:\Users\%uName%\AppData\Local\Microsoft\Edge\User Data" /E
-robocopy "%importDir%\Firefox" "C:\Users\%uName%\AppData\Roaming\Mozilla\Firefox\Profiles" /E
+robocopy "%importDir%\Chrome" "C:\Users\%uName%\AppData\Local\Google\Chrome\User Data\Default" /E
+robocopy "%importDir%\Edge" "C:\Users\%uName%\AppData\Local\Microsoft\Edge\User Data\Default" /E
+copy "%importDir%\Firefox\installs.ini" "C:\Users\%uName%\AppData\Roaming\Mozilla\Firefox" /E
+robocopy "%importDir%\Firefox\Profiles" "C:\Users\%uName%\AppData\Roaming\Mozilla\Firefox\Profiles" /E
 robocopy "%importDir%\TaskbarPins" "C:\Users\%uName%\AppData\Roaming\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar" /E
 for /r "%importDir%\WiFiProfiles" %%w in (*.xml) do (
     echo Adding profile from: "%%w"
     netsh wlan add profile filename="%%w" user=all
 )
 move "%importDir%\Wallpaper\TranscodedWallpaper.jpg" "C:\aitsys\Wallpaper.jpg"
-powershell set-itemproperty -path "HKCU:Control Panel\Desktop" -name WallPaper -value C:\aitsys\Wallpaper.jpg
+powershell -command "set-itemproperty -path 'HKCU:Control Panel\Desktop' -name WallPaper -value C:\aitsys\Wallpaper.jpg"
 powershell RUNDLL32.EXE USER32.DLL,UpdatePerUserSystemParameters ,1 ,True
 robocopy "%importDir%\Downloads" "C:\Users\%uName%\Downloads" /E
 
@@ -265,15 +264,6 @@ echo Exporting third-party drivers..
 powershell -Command "Get-PrinterDriver | Where-Object { $_.InfPath -and (Test-Path $_.InfPath) -and ($_.Name -notmatch 'Microsoft|PDF|OneNote|Remote Desktop|Adobe') } | ForEach-Object { $source = Split-Path $_.InfPath -Parent; $dest = Join-Path '%DRIVER_DIR%' $_.Name; Copy-Item -Path $source -Destination $dest -Recurse -Force }"
 
 echo All drivers exported to Drivers folder.
-
-::echo Removing un-used third-party drivers from export folder..
-::for /R "%DRIVER_DIR%" %%F in (*.inf) do (
-::    findstr /I /G:"%USED_LIST%" "%%F" >nul
-::    if errorlevel 1 (
-::        echo Removing unused driver folder: %%~dpF
-::        rmdir /S /Q "%%~dpF"
-::    )
-::)
 
 echo === Printer Export Complete ===
 goto zip
