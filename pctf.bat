@@ -45,7 +45,7 @@ if "%opt%" equ "1" (
 
 
 :selectLocalUser
-set /p "uName=Type the user account you wish to export: "
+set /p "uName=Type the user account you wish to import: "
 	if not exist "C:\Users\!uName!" (
 		echo ERROR: C:\Users\!uName! could not be found; please try again.
 		goto selectLocalUser
@@ -100,7 +100,7 @@ exit
 
 :checkLocalUser
 if /i "%userprofile%" equ "C:\Windows\system32\config\systemprofile" (
-	set /p "uName=ERROR: User account not found - enter the desired exported username below: "
+	set /p "uName=ERROR: User account not found - enter the desired username below: "
 	if not exist "C:\Users\!uName!" (
 		goto checkLocalUser
 	) else (
