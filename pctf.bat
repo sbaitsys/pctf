@@ -20,7 +20,7 @@ echo   / _ \/ ___/_  __/ __/
 echo  / ___/ /__  / / / _/   
 echo /_/   \___/ /_/ /_/    
 echo.
-echo PC Transfer Tool v1.1.5 -- Developed by activIT Systems
+echo PC Transfer Tool v1.1.6 -- Developed by Samuel Bunko
 echo.
 echo 1. Import current user
 echo 2. Import another user
@@ -162,17 +162,22 @@ robocopy "C:\Users\%uName%\AppData\Local\Microsoft\Edge\User Data\Default" "%wor
 copy "C:\Users\%uName%\AppData\Roaming\Mozilla\Firefox\installs.ini" "%worDir%\Firefox" /E
 copy "C:\Users\%uName%\AppData\Roaming\Mozilla\Firefox\profiles.ini" "%worDir%\Firefox" /E
 robocopy "C:\Users\%uName%\AppData\Roaming\Mozilla\Firefox\Profiles" "%worDir%\Firefox\Profiles" /E
+if exist "C:\Users\%uName%\AppData\Roaming\Microsoft\Windows\Themes\TranscodedWallpaper" (
+    robocopy "C:\Users\%uName%\AppData\Roaming\Microsoft\Windows\Themes" "%worDir%\Wallpaper" /E
+	cd %worDir%\Wallpaper
+    ren TranscodedWallpaper TranscodedWallpaper.jpg
+    if "%dlReq%" equ "y" (
+	    robocopy "C:\Users\%uName%\Downloads" "%worDir%\Downloads" /E
+    )
+) else (
+    echo No wallpaper found. Skipping.
+)
 robocopy "C:\Users\%uName%\AppData\Roaming\Microsoft\Windows\Themes" "%worDir%\Wallpaper" /E
 robocopy "C:\Users\%uName%\AppData\Roaming\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar" "%worDir%\TaskbarPins" /E
 if not exist "%worDir%\WiFiProfiles" (
 		mkdir "%worDir%\WiFiProfiles"
 	)
 netsh wlan export profile key=clear folder="%worDir%\WiFiProfiles"
-cd %worDir%\Wallpaper
-ren TranscodedWallpaper TranscodedWallpaper.jpg
-if "%dlReq%" equ "y" (
-	robocopy "C:\Users\%uName%\Downloads" "%worDir%\Downloads" /E
-)
 goto printerExpo
 exit
 
@@ -207,16 +212,25 @@ copy "%importDir%\Firefox\installs.ini" "C:\Users\%uName%\AppData\Roaming\Mozill
 copy "%importDir%\Firefox\profiles.ini" "C:\Users\%uName%\AppData\Roaming\Mozilla\Firefox" /E
 robocopy "%importDir%\Firefox\Profiles" "C:\Users\%uName%\AppData\Roaming\Mozilla\Firefox\Profiles" /E
 robocopy "%importDir%\TaskbarPins" "C:\Users\%uName%\AppData\Roaming\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar" /E
+start explorer.exe
 for /r "%importDir%\WiFiProfiles" %%w in (*.xml) do (
     echo Adding profile from: "%%w"
     netsh wlan add profile filename="%%w" user=all
 )
-move "%importDir%\Wallpaper\TranscodedWallpaper.jpg" "C:\aitsys\Wallpaper.jpg"
-powershell -command "set-itemproperty -path 'HKCU:Control Panel\Desktop' -name WallPaper -value C:\aitsys\Wallpaper.jpg"
-powershell RUNDLL32.EXE USER32.DLL,UpdatePerUserSystemParameters ,1 ,True
+mkdir %importDir%\Wallpaper 2>nul
+echo Downloading activIT Theme Pack..
+curl -s -L -A "Mozilla/5.0" "https://www.aitsys.com.au/internal-use/AITSYS2023theme.deskthemepack" --output "%importDir%\Wallpaper\aitsys.deskthemepack"
+%importDir%\Wallpaper\aitsys.deskthemepack
+%localappdata%\Microsoft\Windows\Themes\AITSYS 20\AITSYS 20.theme
+echo Applied activIT Theme Pack.
+if exist "%importDir%\Wallpaper\TranscodedWallpaper.jpg" (
+	move "%importDir%\Wallpaper\TranscodedWallpaper.jpg" "C:\aitsys\Wallpaper.jpg"
+	powershell -command "set-itemproperty -path 'HKCU:Control Panel\Desktop' -name WallPaper -value C:\aitsys\Wallpaper.jpg"
+	powershell RUNDLL32.EXE USER32.DLL,UpdatePerUserSystemParameters ,1 ,True
+	echo Updated wallpaper.
+)
 robocopy "%importDir%\Downloads" "C:\Users\%uName%\Downloads" /E
 
-start explorer.exe
 goto printerImpo
 exit
 
