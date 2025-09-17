@@ -173,7 +173,8 @@ if exist "C:\Users\%uName%\AppData\Roaming\Microsoft\Windows\Themes\TranscodedWa
     echo No wallpaper found. Skipping.
 )
 robocopy "C:\Users\%uName%\AppData\Roaming\Microsoft\Windows\Themes" "%worDir%\Wallpaper" /E
-robocopy "C:\Users\%uName%\AppData\Roaming\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar" "%worDir%\TaskbarPins" /E
+robocopy "C:\Users\%uName%\AppData\Roaming\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar" "%worDir%\TaskbarPins\Shortcuts" /E
+reg export "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Taskband" "%importDir%\TaskbarPins\Taskband.reg"
 if not exist "%worDir%\WiFiProfiles" (
 		mkdir "%worDir%\WiFiProfiles"
 	)
@@ -211,8 +212,10 @@ robocopy "%importDir%\Edge" "C:\Users\%uName%\AppData\Local\Microsoft\Edge\User 
 copy "%importDir%\Firefox\installs.ini" "C:\Users\%uName%\AppData\Roaming\Mozilla\Firefox" /E
 copy "%importDir%\Firefox\profiles.ini" "C:\Users\%uName%\AppData\Roaming\Mozilla\Firefox" /E
 robocopy "%importDir%\Firefox\Profiles" "C:\Users\%uName%\AppData\Roaming\Mozilla\Firefox\Profiles" /E
-robocopy "%importDir%\TaskbarPins" "C:\Users\%uName%\AppData\Roaming\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar" /E
+robocopy "%importDir%\TaskbarPins\Shortcuts" "C:\Users\%uName%\AppData\Roaming\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar" /E
+reg import "%importDir%\TaskbarPins\Taskband.reg"
 start explorer.exe
+ie4uinit.exe -ClearIconCache
 for /r "%importDir%\WiFiProfiles" %%w in (*.xml) do (
     echo Adding profile from: "%%w"
     netsh wlan add profile filename="%%w" user=all
