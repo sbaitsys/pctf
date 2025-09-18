@@ -174,7 +174,8 @@ if exist "C:\Users\%uName%\AppData\Roaming\Microsoft\Windows\Themes\TranscodedWa
 )
 robocopy "C:\Users\%uName%\AppData\Roaming\Microsoft\Windows\Themes" "%worDir%\Wallpaper" /E
 robocopy "C:\Users\%uName%\AppData\Roaming\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar" "%worDir%\TaskbarPins\Shortcuts" /E
-reg export "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Taskband" "%importDir%\TaskbarPins\Taskband.reg"
+mkdir %worDir%\TaskbarPins 2> nul
+reg export "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Taskband" %worDir%\TaskbarPins\Taskband.reg
 if not exist "%worDir%\WiFiProfiles" (
 		mkdir "%worDir%\WiFiProfiles"
 	)
