@@ -45,7 +45,7 @@ if "%opt%" equ "1" (
 
 
 :selectLocalUser
-set /p "uName=Type the user account you wish to import: "
+set /p "uName=Type the username of the account: "
 	if not exist "C:\Users\!uName!" (
 		echo ERROR: C:\Users\!uName! could not be found; please try again.
 		goto selectLocalUser
