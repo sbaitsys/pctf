@@ -317,7 +317,7 @@ if "%killTasks%" equ "y" (
 	taskkill /f /im outlook.exe 2> nul
 	taskkill /f /im winword.exe 2> nul
 	taskkill /f /im excel.exe 2> nul
-	taskkill /f /im powerpnt.exe 2> nul
+	taskkill /f /im powerpnt.exe 2> nul 
 	taskkill /f /im Acrord32.exe 2> nul
 ) else (
 	echo Unable to complete import; please save any open files within Chrome, Edge, Firefox, Outlook, Word, Excel or PowerPoint and try again.
@@ -385,7 +385,7 @@ if exist "C:\Users\%uName%\AppData\Roaming\Adobe" (
 )
 
 :: Import Power Plan & Lid Configurations
-for /f "tokens=3" %%G in ('powercfg /import "%importDir%\Power\active_powerplan.pow" ^&^& powercfg /l ^| findstr /i "Imported"') do set NEWGUID=%%G
+for /f "tokens=4" %%G in ('powercfg /import "%importDir%\Power\active_powerplan.pow" ^&^& powercfg /l ^| findstr /i "Imported"') do set NEWGUID=%%G
 powercfg /setactive %NEWGUID% 2>nul
 powercfg /setacvalueindex %NEWGUID% SUB_BUTTONS LIDACTION 0 2>nul :: Configure on Lid Close to do nothing (on power)
 powercfg /setdcvalueindex %NEWGUID% SUB_BUTTONS LIDACTION 1 2>nul :: Configure on Lid Close to Sleep (on battery)
