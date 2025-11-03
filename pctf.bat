@@ -405,7 +405,7 @@ for /r "%importDir%\WiFiProfiles" %%w in (*.xml) do (
 )
 
 :: Import Wallpapers & Install activIT Theme Pack
-echo Importing Wallpaper data & downloading activIT Theme Pack
+echo Importing Wallpaper data and downloading activIT Theme Pack
 mkdir %importDir%\Wallpaper 2>nul
 echo Downloading activIT Theme Pack..
 curl -s -L -A "Mozilla/5.0" "https://www.aitsys.com.au/internal-use/AITSYS2023theme.deskthemepack" --output "%importDir%\Wallpaper\aitsys.deskthemepack"
