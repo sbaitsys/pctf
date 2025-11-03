@@ -406,10 +406,9 @@ for /r "%importDir%\WiFiProfiles" %%w in (*.xml) do (
 
 :: Import Wallpapers & Install activIT Theme Pack
 echo Importing Wallpaper data and downloading activIT Theme Pack
-mkdir %importDir%\Wallpaper 2>nul
 echo Downloading activIT Theme Pack..
-curl -s -L -A "Mozilla/5.0" "https://www.aitsys.com.au/internal-use/AITSYS2023theme.deskthemepack" --output "%importDir%\Wallpaper\aitsys.deskthemepack"
-%importDir%\Wallpaper\aitsys.deskthemepack
+curl -s -L -A "Mozilla/5.0" "https://www.aitsys.com.au/internal-use/AITSYS2023theme.deskthemepack" --output "C:\aitsys\aitsys.deskthemepack"
+C:\aitsys\aitsys.deskthemepack
 %localappdata%\Microsoft\Windows\Themes\AITSYS 20\AITSYS 20.theme
 echo Applied activIT Theme Pack.
 if exist "%importDir%\Wallpaper\TranscodedWallpaper.jpg" (
@@ -480,7 +479,7 @@ set "FN=%FN:|=_%"
 if exist "%PRINTER_CONFS%\%FN%.dat" (
     "%RUNDLL%" printui.dll,PrintUIEntry /Sr /n "!PN!" /a "!DAT!" m c u d g >nul 2>&1
 	if %errorlevel%==0 (
-		echo Restored !PN!
+		echo Restored configuration for !PN!
 	)
 ) else (
     echo No export file for "%PN%" (expected "%PRINTER_CONFS%\%FN%.dat")
@@ -495,25 +494,7 @@ net localgroup Administrators > C:\aitsys\admin_members.txt
 for /f "skip=6 tokens=*" %%a in ('type C:\aitsys\admin_members.txt') do (
     set "line=%%a"
     for /f "tokens=* delims=" %%b in ("!line!") do set "line=%%b"
-    if "!line!"=="The command completed successfully." (
-		del C:\aitsys\admin_members.txt
-		echo "Disabled all administrator users (excluding currently logged in)."
-
-		:: Configure English (AUS) as primary language pack
-		powershell Set-WinSystemLocale en-AU
-		powershell Set-WinUserLanguageList en-AU -Force
-		echo Configured English (Australia) as default language profile
-		:: Remove activIT WiFi profiles
-		netsh wlan delete profile name="activIT Systems" >nul 2>&1
-		netsh wlan delete profile name="activIT Systems - Guest" >nul 2>&1
-		netsh wlan delete profile name="activIT Systems - Workbench" >nul 2>&1
-		echo Removed activIT Systems WiFi Profiles
-		echo.
-		:: Announce script completion
-		echo Workstation Import complete. Closing script.
-		timeout /t 30
-		exit
-	)
+    if "!line!"=="The command completed successfully." goto endPostMDT
     
 	if not "!line!"=="" (
         if /I not "!line!"=="%username%" (
@@ -524,6 +505,25 @@ for /f "skip=6 tokens=*" %%a in ('type C:\aitsys\admin_members.txt') do (
         )
     )
 )
+
+:endPostMDT
+del C:\aitsys\admin_members.txt
+echo "Disabled all administrator users (excluding currently logged in)."
+
+:: Configure English (AUS) as primary language pack
+powershell Set-WinSystemLocale en-AU
+powershell Set-WinUserLanguageList en-AU -Force
+echo Configured English (Australia) as default language profile
+:: Remove activIT WiFi profiles
+netsh wlan delete profile name="activIT Systems" >nul 2>&1
+netsh wlan delete profile name="activIT Systems - Guest" >nul 2>&1
+netsh wlan delete profile name="activIT Systems - Workbench" >nul 2>&1
+echo Removed activIT Systems WiFi Profiles
+echo.
+:: Announce script completion
+echo Workstation Import complete. Closing script.
+timeout /t 30
+exit
 
 :: ZIP Export
 :zip
