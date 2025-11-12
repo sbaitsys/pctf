@@ -128,8 +128,8 @@ if errorlevel 2 set prReq=n
 echo Exporting Microsoft 365 data (templates, signatures, User MRU, Microsoft Notes, Outlook Categories)
 taskkill /f /im Microsoft.Notes.exe 2> nul
 mkdir "%worDir%\MicrosoftNotes" 2> nul
-robocopy "C:\Users\%uName%\AppData\Roaming\Microsoft\Signatures" "%worDir%\Signatures" /E /MT:32 /R:3 /W:1
-robocopy "C:\Users\%uName%\AppData\Roaming\Microsoft\Templates" "%worDir%\Templates" /E /MT:32 /R:3 /W:1
+robocopy "C:\Users\%uName%\AppData\Roaming\Microsoft\Signatures" "%worDir%\Signatures" /E /MT:16 /R:3 /W:1 /XJ
+robocopy "C:\Users\%uName%\AppData\Roaming\Microsoft\Templates" "%worDir%\Templates" /E /MT:16 /R:3 /W:1 /XJ
 robocopy "C:\Users\%uName%\AppData\Local\Packages\Microsoft.MicrosoftStickyNotes_8wekyb3d8bbwe\LocalState" "%worDir%\MicrosoftNotes" plum.sqlite settings.json
 if "%opt%" equ "3" (
 	reg export "HKCU\Software\Microsoft\Office\16.0\Word\User MRU"  "%worDir%\Word_MRU.reg" /y
@@ -156,17 +156,17 @@ robocopy "C:\Users\%uName%\AppData\Roaming\Microsoft\Windows\Recent\CustomDestin
 
 :: Export Google Chrome Data
 echo Exporting Google Chrome data..
-robocopy "C:\Users\%uName%\AppData\Local\Google\Chrome\User Data\Default" "%worDir%\Chrome" /E /MT:32 /R:3 /W:1 /XD "Service Worker" "WebStorage" "Cache" "Code Cache" "IndexedDB"
+robocopy "C:\Users\%uName%\AppData\Local\Google\Chrome\User Data\Default" "%worDir%\Chrome" /E /MT:16 /R:3 /W:1 /XJ /XD "Service Worker" "WebStorage" "Cache" "Code Cache" "IndexedDB" /XF "Cookies" "Cookies-journal" "Network Persistent State" "History-journal" "History Provider Cache"
 
 :: Export Microsoft Edge Data
 echo Exporting Microsoft Edge data..
-robocopy "C:\Users\%uName%\AppData\Local\Microsoft\Edge\User Data\Default" "%worDir%\Edge" /E /MT:32 /R:3 /W:1 /XD "Service Worker" "WebStorage" "Cache" "Code Cache" "IndexedDB"
+robocopy "C:\Users\%uName%\AppData\Local\Microsoft\Edge\User Data\Default" "%worDir%\Edge" /E /MT:16 /R:3 /W:1 /XJ /XD "Service Worker" "WebStorage" "Cache" "Code Cache" "IndexedDB" /XF "Cookies" "Cookies-journal" "Network Persistent State" "History-journal" "History Provider Cache"
 
 :: Export Mozilla Firefox Data
 echo Exporting Mozilla Firefox data..
 copy /Y "C:\Users\%uName%\AppData\Roaming\Mozilla\Firefox\installs.ini" "%worDir%\Firefox\installs.ini"
 copy /Y "C:\Users\%uName%\AppData\Roaming\Mozilla\Firefox\profiles.ini" "%worDir%\Firefox\profiles.ini"
-robocopy "C:\Users\%uName%\AppData\Roaming\Mozilla\Firefox\Profiles" "%worDir%\Firefox\Profiles" /E /MT:32 /R:3 /W:1 /XD "shader-cache" "saved-telemetry-pings" "crashes"
+robocopy "C:\Users\%uName%\AppData\Roaming\Mozilla\Firefox\Profiles" "%worDir%\Firefox\Profiles" /E /MT:16 /R:3 /W:1 /XJ /XD "shader-cache" "saved-telemetry-pings" "crashes" /XF "Cookies" "Cookies-journal" "Network Persistent State" "History-journal" "History Provider Cache"
 
 :: Export Adobe Stamps & signatures
 if exist "C:\Users\%uName%\AppData\Roaming\Adobe" (
@@ -220,7 +220,7 @@ PAUSE
 :: Export Downloads Folder
 if "%dlReq%" equ "y" (
     echo Exporting Downloads folder..
-	robocopy "C:\Users\%uName%\Downloads" "%worDir%\Downloads" /E /MT:32 /R:3 /W:1 
+	robocopy "C:\Users\%uName%\Downloads" "%worDir%\Downloads" /E /MT:16 /R:3 /W:1 /XJ 
 )
 
 :: Export third-party font files
@@ -231,7 +231,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command "$fontList=((Invoke-WebRe
 :: Export Wallpaper Data
 echo Exporting Wallpaper..
 if exist "C:\Users\%uName%\AppData\Roaming\Microsoft\Windows\Themes\TranscodedWallpaper" (
-	robocopy "C:\Users\%uName%\AppData\Roaming\Microsoft\Windows\Themes" "%worDir%\Wallpaper" /E /MT:32 /R:3 /W:1 > nul
+	robocopy "C:\Users\%uName%\AppData\Roaming\Microsoft\Windows\Themes" "%worDir%\Wallpaper" /E /MT:16 /R:3 /W:1 /XJ > nul
 	cd %worDir%\Wallpaper
     ren TranscodedWallpaper TranscodedWallpaper.jpg
 ) else (
@@ -325,8 +325,8 @@ if "%killTasks%" equ "y" (
 
 :: Import M365 Data
 echo Importing Microsoft 365 data (templates, signatures, User MRU)
-robocopy "%importDir%\Signatures" "C:\Users\%uName%\AppData\Roaming\Microsoft\Signatures" /E /MT:32 /R:3 /W:1 
-robocopy "%importDir%\Templates" "C:\Users\%uName%\AppData\Roaming\Microsoft\Templates" /E /MT:32 /R:3 /W:1 
+robocopy "%importDir%\Signatures" "C:\Users\%uName%\AppData\Roaming\Microsoft\Signatures" /E /MT:16 /R:3 /W:1 /XJ 
+robocopy "%importDir%\Templates" "C:\Users\%uName%\AppData\Roaming\Microsoft\Templates" /E /MT:16 /R:3 /W:1 /XJ 
 robocopy "%worDir%\MicrosoftNotes" "C:\Users\%uName%\AppData\Local\Packages\Microsoft.MicrosoftStickyNotes_8wekyb3d8bbwe\LocalState" plum.sqlite settings.json
 if "%opt%" equ "1" (
 	reg import "%importDir%\Word_MRU.reg"
@@ -355,17 +355,17 @@ start explorer.exe
 
 :: Import Google Chrome Data
 echo Importing Google Chrome Data..
-robocopy "%importDir%\Chrome" "C:\Users\%uName%\AppData\Local\Google\Chrome\User Data\Default" /E /MT:32 /R:3 /W:1 
+robocopy "%importDir%\Chrome" "C:\Users\%uName%\AppData\Local\Google\Chrome\User Data\Default" /E /MT:16 /R:3 /W:1 /XJ 
 
 :: Import Microsoft Edge Data
 echo Importing Microsoft Edge Data..
-robocopy "%importDir%\Edge" "C:\Users\%uName%\AppData\Local\Microsoft\Edge\User Data\Default" /E /MT:32 /R:3 /W:1 
+robocopy "%importDir%\Edge" "C:\Users\%uName%\AppData\Local\Microsoft\Edge\User Data\Default" /E /MT:16 /R:3 /W:1 /XJ 
 
 :: Import Mozilla Firefox Data
 echo Importing Mozilla Firefox Data..
 copy "%importDir%\Firefox\installs.ini" "C:\Users\%uName%\AppData\Roaming\Mozilla\Firefox" /E
 copy "%importDir%\Firefox\profiles.ini" "C:\Users\%uName%\AppData\Roaming\Mozilla\Firefox" /E
-robocopy "%importDir%\Firefox\Profiles" "C:\Users\%uName%\AppData\Roaming\Mozilla\Firefox\Profiles" /E /MT:32 /R:3 /W:1 
+robocopy "%importDir%\Firefox\Profiles" "C:\Users\%uName%\AppData\Roaming\Mozilla\Firefox\Profiles" /E /MT:16 /R:3 /W:1 /XJ 
 
 :: Export Adobe Stamps & signatures
 if exist "C:\Users\%uName%\AppData\Roaming\Adobe" (
@@ -421,7 +421,7 @@ if exist "%importDir%\Wallpaper\TranscodedWallpaper.jpg" (
 :: Import Downloads Folder
 if exist "%importDir%\Downloads" (
 	echo Importing Downloads Folder 
-	robocopy "%importDir%\Downloads" "C:\Users\%uName%\Downloads" /E /MT:32 /R:3 /W:1 
+	robocopy "%importDir%\Downloads" "C:\Users\%uName%\Downloads" /E /MT:16 /R:3 /W:1 /XJ 
 )
 
 :: Import third party Font files
