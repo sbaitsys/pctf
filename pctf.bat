@@ -156,17 +156,17 @@ robocopy "C:\Users\%uName%\AppData\Roaming\Microsoft\Windows\Recent\CustomDestin
 
 :: Export Google Chrome Data
 echo Exporting Google Chrome data..
-robocopy "C:\Users\%uName%\AppData\Local\Google\Chrome\User Data\Default" "%worDir%\Chrome" /E /MT:16 /R:3 /W:1 /XJ /XD "Service Worker" "WebStorage" "Cache" "Code Cache" "IndexedDB" /XF "Cookies" "Cookies-journal" "Network Persistent State" "History-journal" "History Provider Cache"
+robocopy "C:\Users\%uName%\AppData\Local\Google\Chrome\User Data\Default" "%worDir%\Chrome" /E /MT:16 /R:3 /W:1 /XJ /XD "Service Worker" "WebStorage" "Cache" "Code Cache" "IndexedDB" /XF "Cookies" "Cookies-journal" "Network Persistent State" "History-journal" "History Provider Cache" "Sessions"
 
 :: Export Microsoft Edge Data
 echo Exporting Microsoft Edge data..
-robocopy "C:\Users\%uName%\AppData\Local\Microsoft\Edge\User Data\Default" "%worDir%\Edge" /E /MT:16 /R:3 /W:1 /XJ /XD "Service Worker" "WebStorage" "Cache" "Code Cache" "IndexedDB" /XF "Cookies" "Cookies-journal" "Network Persistent State" "History-journal" "History Provider Cache"
+robocopy "C:\Users\%uName%\AppData\Local\Microsoft\Edge\User Data\Default" "%worDir%\Edge" /E /MT:16 /R:3 /W:1 /XJ /XD "Service Worker" "WebStorage" "Cache" "Code Cache" "IndexedDB" /XF "Cookies" "Cookies-journal" "Network Persistent State" "History-journal" "History Provider Cache" "Sessions"
 
 :: Export Mozilla Firefox Data
 echo Exporting Mozilla Firefox data..
 copy /Y "C:\Users\%uName%\AppData\Roaming\Mozilla\Firefox\installs.ini" "%worDir%\Firefox\installs.ini"
 copy /Y "C:\Users\%uName%\AppData\Roaming\Mozilla\Firefox\profiles.ini" "%worDir%\Firefox\profiles.ini"
-robocopy "C:\Users\%uName%\AppData\Roaming\Mozilla\Firefox\Profiles" "%worDir%\Firefox\Profiles" /E /MT:16 /R:3 /W:1 /XJ /XD "shader-cache" "saved-telemetry-pings" "crashes" /XF "Cookies" "Cookies-journal" "Network Persistent State" "History-journal" "History Provider Cache"
+robocopy "C:\Users\%uName%\AppData\Roaming\Mozilla\Firefox\Profiles" "%worDir%\Firefox\Profiles" /E /MT:16 /R:3 /W:1 /XJ /XD "shader-cache" "saved-telemetry-pings" "crashes" /XF "Cookies" "Cookies-journal" "Network Persistent State" "History-journal" "History Provider Cache" "Sessions"
 
 :: Export Adobe Stamps & signatures
 if exist "C:\Users\%uName%\AppData\Roaming\Adobe" (
