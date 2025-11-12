@@ -187,7 +187,6 @@ if exist "C:\Users\%uName%\AppData\Roaming\Adobe" (
 	robocopy "C:\Users\%uName%\AppData\Roaming\Adobe\Acrobat\DC\Stamps" "%worDir%\Adobe\Stamps" *.* /E
 	robocopy "C:\Users\%uName%\AppData\Roaming\Adobe\Acrobat\DC\Security" "%worDir%\Adobe\Security" appearance.acrodata
 )
-PAUSE
 
 :: Export Power Plan & Lid Configurations
 echo Exporting Power Plan and Lid Configurations..
@@ -215,7 +214,6 @@ if "%opt%" equ "4" (
 	reg export "HKU\!SID!\Control Panel\Desktop" "%worDir%\Accessibility\Desktop.reg" /y
 	reg export "HKU\!SID!\Software\Microsoft\Accessibility" "%worDir%\Accessibility\MS_Accessibility.reg" /y
 )
-PAUSE
 
 :: Export Downloads Folder
 if "%dlReq%" equ "y" (
