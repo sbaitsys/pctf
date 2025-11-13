@@ -349,7 +349,7 @@ mkdir "C:\Users\%uName%\AppData\Roaming\Microsoft\Windows\Recent\AutomaticDestin
 mkdir "C:\Users\%uName%\AppData\Roaming\Microsoft\Windows\Recent\CustomDestinations"
 robocopy "%worDir%\QuickAccess\AutomaticDestinations" "C:\Users\%uName%\AppData\Roaming\Microsoft\Windows\Recent\AutomaticDestinations" *.* /E 
 robocopy "%worDir%\QuickAccess\CustomDestinations" "C:\Users\%uName%\AppData\Roaming\Microsoft\Windows\Recent\CustomDestinations" *.* /E 
-start explorer.exe
+explorer.exe
 
 :: Import Google Chrome Data
 echo Importing Google Chrome Data..
@@ -453,11 +453,11 @@ if not exist "%PRINTER_CONFS%" (
     echo No configurations folder found: %PRINTER_CONFS%
     goto postMDT
 )
-set "RUNDLL=%SystemRoot%\System32\rundll32.exe"
-if exist %SystemRoot%\Sysnative\rundll32.exe set "RUNDLL=%SystemRoot%\Sysnative\rundll32.exe"
-for /f "usebackq delims=" %%A in ("%PRINTER_LIST%") do (
-    call :impoSpecificPrinter "%%~A"
-)
+:: set "RUNDLL=%SystemRoot%\System32\rundll32.exe"
+:: if exist %SystemRoot%\Sysnative\rundll32.exe set "RUNDLL=%SystemRoot%\Sysnative\rundll32.exe"
+:: for /f "usebackq delims=" %%A in ("%PRINTER_LIST%") do (
+::     call :impoSpecificPrinter "%%~A"
+:: )
 goto postMDT
 
 :impoSpecificPrinter
