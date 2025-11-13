@@ -407,7 +407,7 @@ echo Importing Wallpaper data and downloading activIT Theme Pack
 echo Downloading activIT Theme Pack..
 curl -s -L -A "Mozilla/5.0" "https://www.aitsys.com.au/internal-use/AITSYS2023theme.deskthemepack" --output "C:\aitsys\aitsys.deskthemepack"
 C:\aitsys\aitsys.deskthemepack
-%localappdata%\Microsoft\Windows\Themes\AITSYS 20\AITSYS 20.theme
+"%localappdata%\Microsoft\Windows\Themes\AITSYS 20\AITSYS 20.theme"
 echo Applied activIT Theme Pack.
 if exist "%importDir%\Wallpaper\TranscodedWallpaper.jpg" (
 	move "%importDir%\Wallpaper\TranscodedWallpaper.jpg" "C:\aitsys\Wallpaper.jpg"
