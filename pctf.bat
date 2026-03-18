@@ -326,7 +326,7 @@ if "%killTasks%" equ "y" (
 echo Importing Microsoft 365 data (templates, signatures, User MRU)
 robocopy "%importDir%\Signatures" "C:\Users\%uName%\AppData\Roaming\Microsoft\Signatures" /E /MT:16 /R:3 /W:1 /XJ 
 robocopy "%importDir%\Templates" "C:\Users\%uName%\AppData\Roaming\Microsoft\Templates" /E /MT:16 /R:3 /W:1 /XJ 
-robocopy "%worDir%\MicrosoftNotes" "C:\Users\%uName%\AppData\Local\Packages\Microsoft.MicrosoftStickyNotes_8wekyb3d8bbwe\LocalState" plum.sqlite settings.json
+robocopy "%importDir%\MicrosoftNotes" "C:\Users\%uName%\AppData\Local\Packages\Microsoft.MicrosoftStickyNotes_8wekyb3d8bbwe\LocalState" plum.sqlite settings.json
 if "%opt%" equ "1" (
 	reg import "%importDir%\Word_MRU.reg"
 	reg import "%importDir%\Excel_MRU.reg"
@@ -348,8 +348,8 @@ if "%opt%" equ "2" (
 echo Importing Quick Access / Favorites (File Explorer)
 mkdir "C:\Users\%uName%\AppData\Roaming\Microsoft\Windows\Recent\AutomaticDestinations"
 mkdir "C:\Users\%uName%\AppData\Roaming\Microsoft\Windows\Recent\CustomDestinations"
-robocopy "%worDir%\QuickAccess\AutomaticDestinations" "C:\Users\%uName%\AppData\Roaming\Microsoft\Windows\Recent\AutomaticDestinations" *.* /E 
-robocopy "%worDir%\QuickAccess\CustomDestinations" "C:\Users\%uName%\AppData\Roaming\Microsoft\Windows\Recent\CustomDestinations" *.* /E 
+robocopy "%importDir%\QuickAccess\AutomaticDestinations" "C:\Users\%uName%\AppData\Roaming\Microsoft\Windows\Recent\AutomaticDestinations" *.* /E 
+robocopy "%importDir%\QuickAccess\CustomDestinations" "C:\Users\%uName%\AppData\Roaming\Microsoft\Windows\Recent\CustomDestinations" *.* /E 
 start "" /B explorer.exe
 
 :: Import Google Chrome Data
@@ -369,8 +369,8 @@ robocopy "%importDir%\Firefox\Profiles" "C:\Users\%uName%\AppData\Roaming\Mozill
 :: Export Adobe Stamps & signatures
 if exist "C:\Users\%uName%\AppData\Roaming\Adobe" (
 	echo Exporting Adobe Acrobat Stamps and Signature data..
-	robocopy "%worDir%\Adobe\Stamps" "C:\Users\%uName%\AppData\Roaming\Adobe\Acrobat\DC\Stamps" *.* /E
-	robocopy "%worDir%\Adobe\Security" "C:\Users\%uName%\AppData\Roaming\Adobe\Acrobat\DC\Security" appearance.acrodata
+	robocopy "%importDir%\Adobe\Stamps" "C:\Users\%uName%\AppData\Roaming\Adobe\Acrobat\DC\Stamps" *.* /E
+	robocopy "%importDir%\Adobe\Security" "C:\Users\%uName%\AppData\Roaming\Adobe\Acrobat\DC\Security" appearance.acrodata
 	if "%opt%" equ "1" (
 		reg import "%importDir%\Acrobat_Annots.reg"
 		reg import "%importDir%\Acrobat_Security.reg"
