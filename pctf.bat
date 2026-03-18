@@ -97,6 +97,7 @@ set "cleanDir=%worDir%"
 for %%C in (^< ^> ^" ^| ^? ^* " ") do (
     set "worDir=!cleanDir:%%C=!"
 	if not exist "%worDir%" (
+		mkdir "%worDir%"
         echo Created directory %worDir% for export
         goto exportUser
     )
@@ -349,7 +350,7 @@ mkdir "C:\Users\%uName%\AppData\Roaming\Microsoft\Windows\Recent\AutomaticDestin
 mkdir "C:\Users\%uName%\AppData\Roaming\Microsoft\Windows\Recent\CustomDestinations"
 robocopy "%worDir%\QuickAccess\AutomaticDestinations" "C:\Users\%uName%\AppData\Roaming\Microsoft\Windows\Recent\AutomaticDestinations" *.* /E 
 robocopy "%worDir%\QuickAccess\CustomDestinations" "C:\Users\%uName%\AppData\Roaming\Microsoft\Windows\Recent\CustomDestinations" *.* /E 
-explorer.exe
+start "" /B explorer.exe
 
 :: Import Google Chrome Data
 echo Importing Google Chrome Data..
