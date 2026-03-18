@@ -155,9 +155,10 @@ if not exist "%worDir%\QuickAccess" mkdir "%worDir%\QuickAccess"
 robocopy "C:\Users\%uName%\AppData\Roaming\Microsoft\Windows\Recent\AutomaticDestinations" "%worDir%\QuickAccess\AutomaticDestinations" *.* /E > nul
 robocopy "C:\Users\%uName%\AppData\Roaming\Microsoft\Windows\Recent\CustomDestinations" "%worDir%\QuickAccess\CustomDestinations" *.* /E > nul
 
-:: Export Google Chrome Data
+:: Export Google Chrome Data (Default and additional profiles)
 echo Exporting Google Chrome data..
-robocopy "C:\Users\%uName%\AppData\Local\Google\Chrome\User Data\Default" "%worDir%\Chrome" /E /MT:16 /R:3 /W:1 /XJ /XD "Service Worker" "WebStorage" "Cache" "Code Cache" "IndexedDB" "GPUCache" "ShaderCache" "Network" "Safe Browsing Network" "Sessions" /XF "Cookies" "Cookies-journal" "Network Persistent State" "History-journal" "History Provider Cache" "Session_*" "Tabs_*" > nul
+robocopy "C:\Users\%uName%\AppData\Local\Google\Chrome\User Data\Default" "%worDir%\Chrome\Default" /E /MT:16 /R:3 /W:1 /XJ /XD "Service Worker" "WebStorage" "Cache" "Code Cache" "IndexedDB" "GPUCache" "ShaderCache" "Network" "Safe Browsing Network" "Sessions" /XF "Cookies" "Cookies-journal" "Network Persistent State" "History-journal" "History Provider Cache" "Session_*" "Tabs_*" > nul
+robocopy "C:\Users\%uName%\AppData\Local\Google\Chrome\User Data" "%worDir%\Chrome" "Profile *" /E /MT:16 /R:3 /W:1 /XJ /XD "Service Worker" "WebStorage" "Cache" "Code Cache" "IndexedDB" "GPUCache" "ShaderCache" "Network" "Safe Browsing Network" "Sessions" /XF "Cookies" "Cookies-journal" "Network Persistent State" "History-journal" "History Provider Cache" "Session_*" "Tabs_*"
 
 :: Export Microsoft Edge Data
 echo Exporting Microsoft Edge data..
@@ -354,7 +355,7 @@ start "" /B explorer.exe
 
 :: Import Google Chrome Data
 echo Importing Google Chrome Data..
-robocopy "%importDir%\Chrome" "C:\Users\%uName%\AppData\Local\Google\Chrome\User Data\Default" /E /MT:16 /R:3 /W:1 /XJ > nul 
+robocopy "%importDir%\Chrome" "C:\Users\%uName%\AppData\Local\Google\Chrome\User Data" /E /MT:16 /R:3 /W:1 /XJ > nul 
 
 :: Import Microsoft Edge Data
 echo Importing Microsoft Edge Data..
