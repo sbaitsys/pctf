@@ -129,45 +129,45 @@ if errorlevel 2 set prReq=n
 echo Exporting Microsoft 365 data (templates, signatures, User MRU, Microsoft Notes, Outlook Categories)
 taskkill /f /im Microsoft.Notes.exe 2> nul
 mkdir "%worDir%\MicrosoftNotes" 2> nul
-robocopy "C:\Users\%uName%\AppData\Roaming\Microsoft\Signatures" "%worDir%\Signatures" /E /MT:16 /R:3 /W:1 /XJ
-robocopy "C:\Users\%uName%\AppData\Roaming\Microsoft\Templates" "%worDir%\Templates" /E /MT:16 /R:3 /W:1 /XJ
-robocopy "C:\Users\%uName%\AppData\Local\Packages\Microsoft.MicrosoftStickyNotes_8wekyb3d8bbwe\LocalState" "%worDir%\MicrosoftNotes" plum.sqlite settings.json
+robocopy "C:\Users\%uName%\AppData\Roaming\Microsoft\Signatures" "%worDir%\Signatures" /E /MT:16 /R:3 /W:1 /XJ > nul
+robocopy "C:\Users\%uName%\AppData\Roaming\Microsoft\Templates" "%worDir%\Templates" /E /MT:16 /R:3 /W:1 /XJ > nul
+robocopy "C:\Users\%uName%\AppData\Local\Packages\Microsoft.MicrosoftStickyNotes_8wekyb3d8bbwe\LocalState" "%worDir%\MicrosoftNotes" plum.sqlite settings.json > nul
 if "%opt%" equ "3" (
-	reg export "HKCU\Software\Microsoft\Office\16.0\Word\User MRU"  "%worDir%\Word_MRU.reg" /y
-	reg export "HKCU\Software\Microsoft\Office\16.0\Excel\User MRU" "%worDir%\Excel_MRU.reg" /y
-	reg export "HKCU\Software\Microsoft\Office\16.0\PowerPoint\User MRU" "%worDir%\PowerPoint_MRU.reg" /y
-	reg export "HKCU\Software\Microsoft\Office\16.0\OneNote\User MRU" "%worDir%\OneNote_MRU.reg" /y
-	reg export "HKCU\Software\Microsoft\Office\16.0\Common\Categories" "%worDir%\Outlook_Categories.reg" /y
+	reg export "HKCU\Software\Microsoft\Office\16.0\Word\User MRU"  "%worDir%\Word_MRU.reg" /y > nul 2>&1
+	reg export "HKCU\Software\Microsoft\Office\16.0\Excel\User MRU" "%worDir%\Excel_MRU.reg" /y > nul 2>&1
+	reg export "HKCU\Software\Microsoft\Office\16.0\PowerPoint\User MRU" "%worDir%\PowerPoint_MRU.reg" /y > nul 2>&1
+	reg export "HKCU\Software\Microsoft\Office\16.0\OneNote\User MRU" "%worDir%\OneNote_MRU.reg" /y > nul 2>&1
+	reg export "HKCU\Software\Microsoft\Office\16.0\Common\Categories" "%worDir%\Outlook_Categories.reg" /y > nul 2>&1
 )
 if "%opt%" equ "4" (
 	for /f "delims=" %%S in ('powershell -NoProfile -Command "$p='C:\Users\!uName!'; Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\*' | Where-Object { $_.ProfileImagePath -ieq $p } | Select-Object -ExpandProperty PSChildName"') do set "SID=%%S"
 	echo !SID!
-	reg export "HKU\!SID!\Software\Microsoft\Office\16.0\Word\User MRU" "%worDir%\Word_MRU.reg" /y
-	reg export "HKU\!SID!\Software\Microsoft\Office\16.0\Excel\User MRU" "%worDir%\Excel_MRU.reg" /y
-	reg export "HKU\!SID!\Software\Microsoft\Office\16.0\PowerPoint\User MRU" "%worDir%\PowerPoint_MRU.reg" /y
-	reg export "HKU\!SID!\Software\Microsoft\Office\16.0\OneNote\User MRU" "%worDir%\OneNote_MRU.reg" /y
-	reg export "HKU\!SID!\Software\Microsoft\Office\16.0\Common\Categories" "%worDir%\Outlook_Categories.reg" /y
+	reg export "HKU\!SID!\Software\Microsoft\Office\16.0\Word\User MRU" "%worDir%\Word_MRU.reg" /y > nul 2>&1
+	reg export "HKU\!SID!\Software\Microsoft\Office\16.0\Excel\User MRU" "%worDir%\Excel_MRU.reg" /y > nul 2>&1
+	reg export "HKU\!SID!\Software\Microsoft\Office\16.0\PowerPoint\User MRU" "%worDir%\PowerPoint_MRU.reg" /y > nul 2>&1
+	reg export "HKU\!SID!\Software\Microsoft\Office\16.0\OneNote\User MRU" "%worDir%\OneNote_MRU.reg" /y > nul 2>&1
+	reg export "HKU\!SID!\Software\Microsoft\Office\16.0\Common\Categories" "%worDir%\Outlook_Categories.reg" /y > nul 2>&1
 )
 
 :: Export Quick Access / Favorites (File Explorer)
 echo Exporting Quick Access / Favorites (File Explorer)
 if not exist "%worDir%\QuickAccess" mkdir "%worDir%\QuickAccess"
-robocopy "C:\Users\%uName%\AppData\Roaming\Microsoft\Windows\Recent\AutomaticDestinations" "%worDir%\QuickAccess\AutomaticDestinations" *.* /E
-robocopy "C:\Users\%uName%\AppData\Roaming\Microsoft\Windows\Recent\CustomDestinations" "%worDir%\QuickAccess\CustomDestinations" *.* /E
+robocopy "C:\Users\%uName%\AppData\Roaming\Microsoft\Windows\Recent\AutomaticDestinations" "%worDir%\QuickAccess\AutomaticDestinations" *.* /E > nul
+robocopy "C:\Users\%uName%\AppData\Roaming\Microsoft\Windows\Recent\CustomDestinations" "%worDir%\QuickAccess\CustomDestinations" *.* /E > nul
 
 :: Export Google Chrome Data
 echo Exporting Google Chrome data..
-robocopy "C:\Users\%uName%\AppData\Local\Google\Chrome\User Data\Default" "%worDir%\Chrome" /E /MT:16 /R:3 /W:1 /XJ /XD "Service Worker" "WebStorage" "Cache" "Code Cache" "IndexedDB" "GPUCache" "ShaderCache" "Network" "Safe Browsing Network" "Sessions" /XF "Cookies" "Cookies-journal" "Network Persistent State" "History-journal" "History Provider Cache" "Session_*" "Tabs_*"
+robocopy "C:\Users\%uName%\AppData\Local\Google\Chrome\User Data\Default" "%worDir%\Chrome" /E /MT:16 /R:3 /W:1 /XJ /XD "Service Worker" "WebStorage" "Cache" "Code Cache" "IndexedDB" "GPUCache" "ShaderCache" "Network" "Safe Browsing Network" "Sessions" /XF "Cookies" "Cookies-journal" "Network Persistent State" "History-journal" "History Provider Cache" "Session_*" "Tabs_*" > nul
 
 :: Export Microsoft Edge Data
 echo Exporting Microsoft Edge data..
-robocopy "C:\Users\%uName%\AppData\Local\Microsoft\Edge\User Data\Default" "%worDir%\Edge" /E /MT:16 /R:3 /W:1 /XJ /XD "Service Worker" "WebStorage" "Cache" "Code Cache" "IndexedDB" "GPUCache" "ShaderCache" "Network" "Safe Browsing Network" "Sessions" /XF "Cookies" "Cookies-journal" "Network Persistent State" "History-journal" "History Provider Cache" "Session_*" "Tabs_*"
+robocopy "C:\Users\%uName%\AppData\Local\Microsoft\Edge\User Data\Default" "%worDir%\Edge" /E /MT:16 /R:3 /W:1 /XJ /XD "Service Worker" "WebStorage" "Cache" "Code Cache" "IndexedDB" "GPUCache" "ShaderCache" "Network" "Safe Browsing Network" "Sessions" /XF "Cookies" "Cookies-journal" "Network Persistent State" "History-journal" "History Provider Cache" "Session_*" "Tabs_*" > nul
 
 :: Export Mozilla Firefox Data
 echo Exporting Mozilla Firefox data..
-copy /Y "C:\Users\%uName%\AppData\Roaming\Mozilla\Firefox\installs.ini" "%worDir%\Firefox\installs.ini"
-copy /Y "C:\Users\%uName%\AppData\Roaming\Mozilla\Firefox\profiles.ini" "%worDir%\Firefox\profiles.ini"
-robocopy "C:\Users\%uName%\AppData\Roaming\Mozilla\Firefox\Profiles" "%worDir%\Firefox\Profiles" /E /MT:16 /R:3 /W:1 /XJ /XD "shader-cache" "saved-telemetry-pings" "crashes"
+copy /Y "C:\Users\%uName%\AppData\Roaming\Mozilla\Firefox\installs.ini" "%worDir%\Firefox\installs.ini" > nul
+copy /Y "C:\Users\%uName%\AppData\Roaming\Mozilla\Firefox\profiles.ini" "%worDir%\Firefox\profiles.ini" > nul
+robocopy "C:\Users\%uName%\AppData\Roaming\Mozilla\Firefox\Profiles" "%worDir%\Firefox\Profiles" /E /MT:16 /R:3 /W:1 /XJ /XD "shader-cache" "saved-telemetry-pings" "crashes" > nul
 
 :: Export Adobe Stamps & signatures
 if exist "C:\Users\%uName%\AppData\Roaming\Adobe" (
@@ -176,17 +176,17 @@ if exist "C:\Users\%uName%\AppData\Roaming\Adobe" (
 	mkdir "%worDir%\Adobe\Stamps"
 	mkdir "%worDir%\Adobe\Security"
 	if "%opt%" equ "3" (
-		reg export "HKCU\Software\Adobe\Adobe Acrobat\DC\Annots" "%worDir%\Adobe\Acrobat_Annots.reg" /y
-		reg export "HKCU\Software\Adobe\Adobe Acrobat\DC\Security" "%worDir%\Adobe\Acrobat_Security.reg" /y
+		reg export "HKCU\Software\Adobe\Adobe Acrobat\DC\Annots" "%worDir%\Adobe\Acrobat_Annots.reg" /y > nul 2>&1
+		reg export "HKCU\Software\Adobe\Adobe Acrobat\DC\Security" "%worDir%\Adobe\Acrobat_Security.reg" /y > nul 2>&1
 	)
 	if "%opt%" equ "4" (
 		for /f "delims=" %%S in ('powershell -NoProfile -Command "$p='C:\Users\!uName!'; Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\*' | Where-Object { $_.ProfileImagePath -ieq $p } | Select-Object -ExpandProperty PSChildName"') do set "SID=%%S"
 		echo !SID!
-		reg export "HKU\!SID!\Software\Adobe\Adobe Acrobat\DC\Annots" "%worDir%\Adobe\Acrobat_Annots.reg" /y
-		reg export "HKU\!SID!\Software\Adobe\Adobe Acrobat\DC\Security" "%worDir%\Adobe\Acrobat_Security.reg" /y
+		reg export "HKU\!SID!\Software\Adobe\Adobe Acrobat\DC\Annots" "%worDir%\Adobe\Acrobat_Annots.reg" /y > nul 2>&1
+		reg export "HKU\!SID!\Software\Adobe\Adobe Acrobat\DC\Security" "%worDir%\Adobe\Acrobat_Security.reg" /y > nul 2>&1
 	)
-	robocopy "C:\Users\%uName%\AppData\Roaming\Adobe\Acrobat\DC\Stamps" "%worDir%\Adobe\Stamps" *.* /E
-	robocopy "C:\Users\%uName%\AppData\Roaming\Adobe\Acrobat\DC\Security" "%worDir%\Adobe\Security" appearance.acrodata
+	robocopy "C:\Users\%uName%\AppData\Roaming\Adobe\Acrobat\DC\Stamps" "%worDir%\Adobe\Stamps" *.* /E > nul
+	robocopy "C:\Users\%uName%\AppData\Roaming\Adobe\Acrobat\DC\Security" "%worDir%\Adobe\Security" appearance.acrodata > nul
 )
 
 :: Export Power Plan & Lid Configurations
@@ -202,24 +202,24 @@ powercfg /q > "%worDir%\Power\powercfg_dump.txt
 echo Exporting Accessibility niceties..
 mkdir "%worDir%\Accessibility" 2>nul
 if "%opt%" equ "3" (
-	reg export "HKCU\Control Panel\Accessibility" "%worDir%\Accessibility\Accessibility.reg" /y
-	reg export "HKCU\Control Panel\Cursors" "%worDir%\Accessibility\Cursors.reg" /y
-	reg export "HKCU\Control Panel\Desktop" "%worDir%\Accessibility\Desktop.reg" /y
-	reg export "HKCU\Software\Microsoft\Accessibility" "%worDir%\Accessibility\MS_Accessibility.reg" /y
+	reg export "HKCU\Control Panel\Accessibility" "%worDir%\Accessibility\Accessibility.reg" /y > nul 2>&1
+	reg export "HKCU\Control Panel\Cursors" "%worDir%\Accessibility\Cursors.reg" /y > nul 2>&1
+	reg export "HKCU\Control Panel\Desktop" "%worDir%\Accessibility\Desktop.reg" /y > nul 2>&1
+	reg export "HKCU\Software\Microsoft\Accessibility" "%worDir%\Accessibility\MS_Accessibility.reg" /y > nul 2>&1
 )
 if "%opt%" equ "4" (
 	for /f "delims=" %%S in ('powershell -NoProfile -Command "$p='C:\Users\!uName!'; Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\*' | Where-Object { $_.ProfileImagePath -ieq $p } | Select-Object -ExpandProperty PSChildName"') do set "SID=%%S"
 	echo !SID!
-	reg export "HKU\!SID!\Control Panel\Accessibility" "%worDir%\Accessibility\Accessibility.reg" /y
-	reg export "HKU\!SID!\Control Panel\Cursors" "%worDir%\Accessibility\Cursors.reg" /y
-	reg export "HKU\!SID!\Control Panel\Desktop" "%worDir%\Accessibility\Desktop.reg" /y
-	reg export "HKU\!SID!\Software\Microsoft\Accessibility" "%worDir%\Accessibility\MS_Accessibility.reg" /y
+	reg export "HKU\!SID!\Control Panel\Accessibility" "%worDir%\Accessibility\Accessibility.reg" /y > nul 2>&1
+	reg export "HKU\!SID!\Control Panel\Cursors" "%worDir%\Accessibility\Cursors.reg" /y > nul 2>&1
+	reg export "HKU\!SID!\Control Panel\Desktop" "%worDir%\Accessibility\Desktop.reg" /y > nul 2>&1
+	reg export "HKU\!SID!\Software\Microsoft\Accessibility" "%worDir%\Accessibility\MS_Accessibility.reg" /y > nul 2>&1
 )
 
 :: Export Downloads Folder
 if "%dlReq%" equ "y" (
     echo Exporting Downloads folder..
-	robocopy "C:\Users\%uName%\Downloads" "%worDir%\Downloads" /E /MT:16 /R:3 /W:1 /XJ 
+	robocopy "C:\Users\%uName%\Downloads" "%worDir%\Downloads" /E /MT:16 /R:3 /W:1 /XJ > nul
 )
 
 :: Export third-party font files
@@ -324,62 +324,62 @@ if "%killTasks%" equ "y" (
 
 :: Import M365 Data
 echo Importing Microsoft 365 data (templates, signatures, User MRU)
-robocopy "%importDir%\Signatures" "C:\Users\%uName%\AppData\Roaming\Microsoft\Signatures" /E /MT:16 /R:3 /W:1 /XJ 
-robocopy "%importDir%\Templates" "C:\Users\%uName%\AppData\Roaming\Microsoft\Templates" /E /MT:16 /R:3 /W:1 /XJ 
-robocopy "%importDir%\MicrosoftNotes" "C:\Users\%uName%\AppData\Local\Packages\Microsoft.MicrosoftStickyNotes_8wekyb3d8bbwe\LocalState" plum.sqlite settings.json
+robocopy "%importDir%\Signatures" "C:\Users\%uName%\AppData\Roaming\Microsoft\Signatures" /E /MT:16 /R:3 /W:1 /XJ > nul
+robocopy "%importDir%\Templates" "C:\Users\%uName%\AppData\Roaming\Microsoft\Templates" /E /MT:16 /R:3 /W:1 /XJ > nul 
+robocopy "%importDir%\MicrosoftNotes" "C:\Users\%uName%\AppData\Local\Packages\Microsoft.MicrosoftStickyNotes_8wekyb3d8bbwe\LocalState" plum.sqlite settings.json > nul
 if "%opt%" equ "1" (
-	reg import "%importDir%\Word_MRU.reg"
-	reg import "%importDir%\Excel_MRU.reg"
-	reg import "%importDir%\PowerPoint_MRU.reg"
-	reg import "%importDir%\OneNote_MRU.reg"
-	reg import "%importDir%\Outlook_Categories.reg
+	reg import "%importDir%\Word_MRU.reg" > nul 2>&1
+	reg import "%importDir%\Excel_MRU.reg" > nul 2>&1
+	reg import "%importDir%\PowerPoint_MRU.reg" > nul 2>&1
+	reg import "%importDir%\OneNote_MRU.reg" > nul 2>&1
+	reg import "%importDir%\Outlook_Categories.reg" > nul 2>&1
 )
 if "%opt%" equ "2" (
-    reg load "HKU\TempHive" "C:\Users\%uName%\NTUSER.DAT"
-	reg import "%importDir%\Word_MRU.reg"
-	reg import "%importDir%\Excel_MRU.reg"
-	reg import "%importDir%\PowerPoint_MRU.reg"
-	reg import "%importDir%\OneNote_MRU.reg"
-	reg import "%importDir%\Outlook_Categories.reg
-	reg unload "HKU\TempHive"
+    reg load "HKU\TempHive" "C:\Users\%uName%\NTUSER.DAT" > nul 2>&1
+	reg import "%importDir%\Word_MRU.reg" > nul 2>&1
+	reg import "%importDir%\Excel_MRU.reg" > nul 2>&1
+	reg import "%importDir%\PowerPoint_MRU.reg" > nul 2>&1
+	reg import "%importDir%\OneNote_MRU.reg" > nul 2>&1
+	reg import "%importDir%\Outlook_Categories.reg" > nul 2>&1
+	reg unload "HKU\TempHive" > nul 2>&1
 )
 
 :: Import Quick Access / Favorites (File Explorer)
 echo Importing Quick Access / Favorites (File Explorer)
-mkdir "C:\Users\%uName%\AppData\Roaming\Microsoft\Windows\Recent\AutomaticDestinations"
-mkdir "C:\Users\%uName%\AppData\Roaming\Microsoft\Windows\Recent\CustomDestinations"
-robocopy "%importDir%\QuickAccess\AutomaticDestinations" "C:\Users\%uName%\AppData\Roaming\Microsoft\Windows\Recent\AutomaticDestinations" *.* /E 
-robocopy "%importDir%\QuickAccess\CustomDestinations" "C:\Users\%uName%\AppData\Roaming\Microsoft\Windows\Recent\CustomDestinations" *.* /E 
+mkdir "C:\Users\%uName%\AppData\Roaming\Microsoft\Windows\Recent\AutomaticDestinations" > nul 2>&1
+mkdir "C:\Users\%uName%\AppData\Roaming\Microsoft\Windows\Recent\CustomDestinations" > nul 2>&1
+robocopy "%importDir%\QuickAccess\AutomaticDestinations" "C:\Users\%uName%\AppData\Roaming\Microsoft\Windows\Recent\AutomaticDestinations" *.* /E > nul 
+robocopy "%importDir%\QuickAccess\CustomDestinations" "C:\Users\%uName%\AppData\Roaming\Microsoft\Windows\Recent\CustomDestinations" *.* /E > nul
 start "" /B explorer.exe
 
 :: Import Google Chrome Data
 echo Importing Google Chrome Data..
-robocopy "%importDir%\Chrome" "C:\Users\%uName%\AppData\Local\Google\Chrome\User Data\Default" /E /MT:16 /R:3 /W:1 /XJ 
+robocopy "%importDir%\Chrome" "C:\Users\%uName%\AppData\Local\Google\Chrome\User Data\Default" /E /MT:16 /R:3 /W:1 /XJ > nul 
 
 :: Import Microsoft Edge Data
 echo Importing Microsoft Edge Data..
-robocopy "%importDir%\Edge" "C:\Users\%uName%\AppData\Local\Microsoft\Edge\User Data\Default" /E /MT:16 /R:3 /W:1 /XJ 
+robocopy "%importDir%\Edge" "C:\Users\%uName%\AppData\Local\Microsoft\Edge\User Data\Default" /E /MT:16 /R:3 /W:1 /XJ > nul
 
 :: Import Mozilla Firefox Data
 echo Importing Mozilla Firefox Data..
-copy "%importDir%\Firefox\installs.ini" "C:\Users\%uName%\AppData\Roaming\Mozilla\Firefox" /E
-copy "%importDir%\Firefox\profiles.ini" "C:\Users\%uName%\AppData\Roaming\Mozilla\Firefox" /E
-robocopy "%importDir%\Firefox\Profiles" "C:\Users\%uName%\AppData\Roaming\Mozilla\Firefox\Profiles" /E /MT:16 /R:3 /W:1 /XJ 
+copy "%importDir%\Firefox\installs.ini" "C:\Users\%uName%\AppData\Roaming\Mozilla\Firefox" /E > nul
+copy "%importDir%\Firefox\profiles.ini" "C:\Users\%uName%\AppData\Roaming\Mozilla\Firefox" /E > nul
+robocopy "%importDir%\Firefox\Profiles" "C:\Users\%uName%\AppData\Roaming\Mozilla\Firefox\Profiles" /E /MT:16 /R:3 /W:1 /XJ > nul 
 
 :: Export Adobe Stamps & signatures
 if exist "C:\Users\%uName%\AppData\Roaming\Adobe" (
 	echo Exporting Adobe Acrobat Stamps and Signature data..
-	robocopy "%importDir%\Adobe\Stamps" "C:\Users\%uName%\AppData\Roaming\Adobe\Acrobat\DC\Stamps" *.* /E
-	robocopy "%importDir%\Adobe\Security" "C:\Users\%uName%\AppData\Roaming\Adobe\Acrobat\DC\Security" appearance.acrodata
+	robocopy "%importDir%\Adobe\Stamps" "C:\Users\%uName%\AppData\Roaming\Adobe\Acrobat\DC\Stamps" *.* /E > nul
+	robocopy "%importDir%\Adobe\Security" "C:\Users\%uName%\AppData\Roaming\Adobe\Acrobat\DC\Security" appearance.acrodata > nul
 	if "%opt%" equ "1" (
-		reg import "%importDir%\Acrobat_Annots.reg"
-		reg import "%importDir%\Acrobat_Security.reg"
+		reg import "%importDir%\Acrobat_Annots.reg" > nul 2>&1
+		reg import "%importDir%\Acrobat_Security.reg" > nul 2>&1
 	)
 	if "%opt%" equ "2" (
-		reg load "HKU\TempHive" "C:\Users\%uName%\NTUSER.DAT"
-		reg import "%importDir%\Acrobat_Annots.reg"
-		reg import "%importDir%\Acrobat_Security.reg"
-		reg unload "HKU\TempHive"
+		reg load "HKU\TempHive" "C:\Users\%uName%\NTUSER.DAT" > nul 2>&1
+		reg import "%importDir%\Acrobat_Annots.reg" > nul 2>&1
+		reg import "%importDir%\Acrobat_Security.reg" > nul 2>&1
+		reg unload "HKU\TempHive" > nul 2>&1
 	)
 )
 
@@ -394,38 +394,38 @@ powercfg /S %NEWGUID% 2>nul
 
 :: Import Accessibility niceties
 echo Importing Accessibility niceties..
-for %%F in ("%importDir%\Accessibility\*.reg") do reg import "%%~fF"
+for %%F in ("%importDir%\Accessibility\*.reg") do reg import "%%~fF" > nul
 
 :: Import WiFi Profiles
 echo Importing WiFi Profiles
 for /r "%importDir%\WiFiProfiles" %%w in (*.xml) do (
     echo Adding profile from: "%%w"
-    netsh wlan add profile filename="%%w" user=all
+    netsh wlan add profile filename="%%w" user=all > nul
 )
 
 :: Import Wallpapers & Install activIT Theme Pack
 echo Importing Wallpaper data and downloading activIT Theme Pack
 echo Downloading activIT Theme Pack..
-curl -s -L -A "Mozilla/5.0" "https://www.aitsys.com.au/internal-use/AITSYS2023theme.deskthemepack" --output "C:\aitsys\aitsys.deskthemepack"
+curl -s -L -A "Mozilla/5.0" "https://www.aitsys.com.au/internal-use/AITSYS2023theme.deskthemepack" --output "C:\aitsys\aitsys.deskthemepack" > nul
 C:\aitsys\aitsys.deskthemepack
 "%localappdata%\Microsoft\Windows\Themes\AITSYS 20\AITSYS 20.theme"
 echo Applied activIT Theme Pack.
 if exist "%importDir%\Wallpaper\TranscodedWallpaper.jpg" (
-	move "%importDir%\Wallpaper\TranscodedWallpaper.jpg" "C:\aitsys\Wallpaper.jpg"
-	powershell -command "set-itemproperty -path 'HKCU:Control Panel\Desktop' -name WallPaper -value C:\aitsys\Wallpaper.jpg"
-	powershell RUNDLL32.EXE USER32.DLL,UpdatePerUserSystemParameters ,1 ,True
+	move "%importDir%\Wallpaper\TranscodedWallpaper.jpg" "C:\aitsys\Wallpaper.jpg" > nul
+	powershell -command "set-itemproperty -path 'HKCU:Control Panel\Desktop' -name WallPaper -value C:\aitsys\Wallpaper.jpg" > nul
+	powershell RUNDLL32.EXE USER32.DLL,UpdatePerUserSystemParameters ,1 ,True > nul
 	echo Updated wallpaper.
 )
 
 :: Import Downloads Folder
 if exist "%importDir%\Downloads" (
 	echo Importing Downloads Folder 
-	robocopy "%importDir%\Downloads" "C:\Users\%uName%\Downloads" /E /MT:16 /R:3 /W:1 /XJ 
+	robocopy "%importDir%\Downloads" "C:\Users\%uName%\Downloads" /E /MT:16 /R:3 /W:1 /XJ > nul 
 )
 
 :: Import third party Font files
 echo Installing font files..
-powershell -Command "Get-ChildItem '%importDir%\Fonts' -File | ForEach-Object { Copy-Item $_.FullName -Destination 'C:\Windows\Fonts' -Force; New-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts' -Name $_.BaseName -PropertyType String -Value $_.Name -Force }"
+powershell -Command "Get-ChildItem '%importDir%\Fonts' -File | ForEach-Object { Copy-Item $_.FullName -Destination 'C:\Windows\Fonts' -Force; New-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts' -Name $_.BaseName -PropertyType String -Value $_.Name -Force }" > nul
 
 :: Import Printer Drivers and Configurations
 if not exist "%importDir%\Printers" (
