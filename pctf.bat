@@ -161,14 +161,17 @@ robocopy "%roaming%\Microsoft\Windows\Recent\CustomDestinations" "%worDir%\Quick
 
 :: Export Google Chrome Data (Default and additional profiles)
 echo Exporting Google Chrome data..
-robocopy "%local%\Google\Chrome\User Data\Default" "%worDir%\Chrome\Default" /E /MT:16 /R:3 /W:1 /XJ /XD "Service Worker" "WebStorage" "Cache" "Code Cache" "IndexedDB" "GPUCache" "ShaderCache" "Network" "Safe Browsing Network" "Sessions" /XF "Cookies" "Cookies-journal" "Network Persistent State" "History-journal" "History Provider Cache" "Session_*" "Tabs_*" > nul
+robocopy "%local%\Google\Chrome\User Data\Default" "%worDir%\Chrome\Default" /E /MT:16 /R:3 /W:1 /XJ /XD "Service Worker" "WebStorage" "Cache" "Code Cache" "IndexedDB" "GPUCache" "ShaderCache" "Network" "Safe Browsing Network" "Sessions" /XF "Cookies" "Cookies-journal" "Network Persistent State" "History-journal" "History Provider Cache" "Session_*" "Tabs_*" > nul 2>&1
 for /D %%G in ("%local%\Google\Chrome\User Data\Profile *") do (
-	robocopy "%%G" "%worDir%\Chrome\%%~nxG" /E /MT:16 /R:3 /W:1 /XJ /XD "Service Worker" "WebStorage" "Cache" "Code Cache" "IndexedDB" "GPUCache" "ShaderCache" "Network" "Safe Browsing Network" "Sessions" /XF "Cookies" "Cookies-journal" "Network Persistent State" "History-journal" "History Provider Cache" "Session_*" "Tabs_*"
+	robocopy "%%G" "%worDir%\Chrome\%%~nxG" /E /MT:16 /R:3 /W:1 /XJ /XD "Service Worker" "WebStorage" "Cache" "Code Cache" "IndexedDB" "GPUCache" "ShaderCache" "Network" "Safe Browsing Network" "Sessions" /XF "Cookies" "Cookies-journal" "Network Persistent State" "History-journal" "History Provider Cache" "Session_*" "Tabs_*" > nul 2>&1
 )
 
 :: Export Microsoft Edge Data
 echo Exporting Microsoft Edge data..
 robocopy "%local%\Microsoft\Edge\User Data\Default" "%worDir%\Edge" /E /MT:16 /R:3 /W:1 /XJ /XD "Service Worker" "WebStorage" "Cache" "Code Cache" "IndexedDB" "GPUCache" "ShaderCache" "Network" "Safe Browsing Network" "Sessions" /XF "Cookies" "Cookies-journal" "Network Persistent State" "History-journal" "History Provider Cache" "Session_*" "Tabs_*" > nul
+for /D %%G in ("%local%\Microsoft\Edge\User Data\Profile *") do (
+	robocopy "%%G" "%worDir%\Edge\%%~nxG" /E /MT:16 /R:3 /W:1 /XJ /XD "Service Worker" "WebStorage" "Cache" "Code Cache" "IndexedDB" "GPUCache" "ShaderCache" "Network" "Safe Browsing Network" "Sessions" /XF "Cookies" "Cookies-journal" "Network Persistent State" "History-journal" "History Provider Cache" "Session_*" "Tabs_*" > nul 2>&1
+)
 
 :: Export Mozilla Firefox Data
 echo Exporting Mozilla Firefox data..
@@ -410,7 +413,7 @@ for %%F in ("%importDir%\Accessibility\*.reg") do reg import "%%~fF" > nul
 :: Import WiFi Profiles
 echo Importing WiFi Profiles
 for /r "%importDir%\WiFiProfiles" %%w in (*.xml) do (
-    echo Adding profile from: "%%w"
+    echo Adding profile from: "%%~nxw"
     netsh wlan add profile filename="%%w" user=all > nul
 )
 
