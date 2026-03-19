@@ -487,7 +487,7 @@ for %%P in ("%PRINTER_CONFS%\*.dat") do (
 	call :impoSpecificPrinter "%%~fP"
 )
 
-pause
+goto postMDT
 
 :impoSpecificPrinter
 if exist "%~1" (
