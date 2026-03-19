@@ -125,13 +125,17 @@ if errorlevel 2 set dlReq=n
 if errorlevel 1 set prReq=y
 if errorlevel 2 set prReq=n
 
+::Set variables
+set "roaming=C:\Users\%uName%\AppData\Roaming"
+set "local=C:\Users\%uName%\AppData\Local"
+
 :: Export M365 Data
 echo Exporting Microsoft 365 data (templates, signatures, User MRU, Microsoft Notes, Outlook Categories)
 taskkill /f /im Microsoft.Notes.exe 2> nul
 mkdir "%worDir%\MicrosoftNotes" 2> nul
-robocopy "C:\Users\%uName%\AppData\Roaming\Microsoft\Signatures" "%worDir%\Signatures" /E /MT:16 /R:3 /W:1 /XJ > nul
-robocopy "C:\Users\%uName%\AppData\Roaming\Microsoft\Templates" "%worDir%\Templates" /E /MT:16 /R:3 /W:1 /XJ > nul
-robocopy "C:\Users\%uName%\AppData\Local\Packages\Microsoft.MicrosoftStickyNotes_8wekyb3d8bbwe\LocalState" "%worDir%\MicrosoftNotes" plum.sqlite settings.json > nul
+robocopy "%roaming%\Microsoft\Signatures" "%worDir%\Signatures" /E /MT:16 /R:3 /W:1 /XJ > nul
+robocopy "%roaming%\Microsoft\Templates" "%worDir%\Templates" /E /MT:16 /R:3 /W:1 /XJ > nul
+robocopy "%local%\Packages\Microsoft.MicrosoftStickyNotes_8wekyb3d8bbwe\LocalState" "%worDir%\MicrosoftNotes" plum.sqlite settings.json > nul
 if "%opt%" equ "3" (
 	reg export "HKCU\Software\Microsoft\Office\16.0\Word\User MRU"  "%worDir%\Word_MRU.reg" /y > nul 2>&1
 	reg export "HKCU\Software\Microsoft\Office\16.0\Excel\User MRU" "%worDir%\Excel_MRU.reg" /y > nul 2>&1
@@ -152,26 +156,28 @@ if "%opt%" equ "4" (
 :: Export Quick Access / Favorites (File Explorer)
 echo Exporting Quick Access / Favorites (File Explorer)
 if not exist "%worDir%\QuickAccess" mkdir "%worDir%\QuickAccess"
-robocopy "C:\Users\%uName%\AppData\Roaming\Microsoft\Windows\Recent\AutomaticDestinations" "%worDir%\QuickAccess\AutomaticDestinations" *.* /E > nul
-robocopy "C:\Users\%uName%\AppData\Roaming\Microsoft\Windows\Recent\CustomDestinations" "%worDir%\QuickAccess\CustomDestinations" *.* /E > nul
+robocopy "%roaming%\Microsoft\Windows\Recent\AutomaticDestinations" "%worDir%\QuickAccess\AutomaticDestinations" *.* /E > nul
+robocopy "%roaming%\Microsoft\Windows\Recent\CustomDestinations" "%worDir%\QuickAccess\CustomDestinations" *.* /E > nul
 
 :: Export Google Chrome Data (Default and additional profiles)
 echo Exporting Google Chrome data..
-robocopy "C:\Users\%uName%\AppData\Local\Google\Chrome\User Data\Default" "%worDir%\Chrome\Default" /E /MT:16 /R:3 /W:1 /XJ /XD "Service Worker" "WebStorage" "Cache" "Code Cache" "IndexedDB" "GPUCache" "ShaderCache" "Network" "Safe Browsing Network" "Sessions" /XF "Cookies" "Cookies-journal" "Network Persistent State" "History-journal" "History Provider Cache" "Session_*" "Tabs_*" > nul
-robocopy "C:\Users\%uName%\AppData\Local\Google\Chrome\User Data" "%worDir%\Chrome" "Profile *" /E /MT:16 /R:3 /W:1 /XJ /XD "Service Worker" "WebStorage" "Cache" "Code Cache" "IndexedDB" "GPUCache" "ShaderCache" "Network" "Safe Browsing Network" "Sessions" /XF "Cookies" "Cookies-journal" "Network Persistent State" "History-journal" "History Provider Cache" "Session_*" "Tabs_*"
+robocopy "%local%\Google\Chrome\User Data\Default" "%worDir%\Chrome\Default" /E /MT:16 /R:3 /W:1 /XJ /XD "Service Worker" "WebStorage" "Cache" "Code Cache" "IndexedDB" "GPUCache" "ShaderCache" "Network" "Safe Browsing Network" "Sessions" /XF "Cookies" "Cookies-journal" "Network Persistent State" "History-journal" "History Provider Cache" "Session_*" "Tabs_*" > nul
+for /D %%G in ("%local%\Google\Chrome\User Data\Profile *") do (
+	robocopy "%%G" "%worDir%\Chrome\%%~nxG" /E /MT:16 /R:3 /W:1 /XJ /XD "Service Worker" "WebStorage" "Cache" "Code Cache" "IndexedDB" "GPUCache" "ShaderCache" "Network" "Safe Browsing Network" "Sessions" /XF "Cookies" "Cookies-journal" "Network Persistent State" "History-journal" "History Provider Cache" "Session_*" "Tabs_*"
+)
 
 :: Export Microsoft Edge Data
 echo Exporting Microsoft Edge data..
-robocopy "C:\Users\%uName%\AppData\Local\Microsoft\Edge\User Data\Default" "%worDir%\Edge" /E /MT:16 /R:3 /W:1 /XJ /XD "Service Worker" "WebStorage" "Cache" "Code Cache" "IndexedDB" "GPUCache" "ShaderCache" "Network" "Safe Browsing Network" "Sessions" /XF "Cookies" "Cookies-journal" "Network Persistent State" "History-journal" "History Provider Cache" "Session_*" "Tabs_*" > nul
+robocopy "%local%\Microsoft\Edge\User Data\Default" "%worDir%\Edge" /E /MT:16 /R:3 /W:1 /XJ /XD "Service Worker" "WebStorage" "Cache" "Code Cache" "IndexedDB" "GPUCache" "ShaderCache" "Network" "Safe Browsing Network" "Sessions" /XF "Cookies" "Cookies-journal" "Network Persistent State" "History-journal" "History Provider Cache" "Session_*" "Tabs_*" > nul
 
 :: Export Mozilla Firefox Data
 echo Exporting Mozilla Firefox data..
-copy /Y "C:\Users\%uName%\AppData\Roaming\Mozilla\Firefox\installs.ini" "%worDir%\Firefox\installs.ini" > nul
-copy /Y "C:\Users\%uName%\AppData\Roaming\Mozilla\Firefox\profiles.ini" "%worDir%\Firefox\profiles.ini" > nul
-robocopy "C:\Users\%uName%\AppData\Roaming\Mozilla\Firefox\Profiles" "%worDir%\Firefox\Profiles" /E /MT:16 /R:3 /W:1 /XJ /XD "shader-cache" "saved-telemetry-pings" "crashes" > nul
+copy /Y "%roaming%\Mozilla\Firefox\installs.ini" "%worDir%\Firefox\installs.ini" > nul
+copy /Y "%roaming%\Mozilla\Firefox\profiles.ini" "%worDir%\Firefox\profiles.ini" > nul
+robocopy "%roaming%\Mozilla\Firefox\Profiles" "%worDir%\Firefox\Profiles" /E /MT:16 /R:3 /W:1 /XJ /XD "shader-cache" "saved-telemetry-pings" "crashes" > nul
 
 :: Export Adobe Stamps & signatures
-if exist "C:\Users\%uName%\AppData\Roaming\Adobe" (
+if exist "%roaming%\Adobe" (
 	echo Exporting Adobe Acrobat Stamps and Signature data..
 	mkdir "%worDir%\Adobe"
 	mkdir "%worDir%\Adobe\Stamps"
@@ -186,8 +192,8 @@ if exist "C:\Users\%uName%\AppData\Roaming\Adobe" (
 		reg export "HKU\!SID!\Software\Adobe\Adobe Acrobat\DC\Annots" "%worDir%\Adobe\Acrobat_Annots.reg" /y > nul 2>&1
 		reg export "HKU\!SID!\Software\Adobe\Adobe Acrobat\DC\Security" "%worDir%\Adobe\Acrobat_Security.reg" /y > nul 2>&1
 	)
-	robocopy "C:\Users\%uName%\AppData\Roaming\Adobe\Acrobat\DC\Stamps" "%worDir%\Adobe\Stamps" *.* /E > nul
-	robocopy "C:\Users\%uName%\AppData\Roaming\Adobe\Acrobat\DC\Security" "%worDir%\Adobe\Security" appearance.acrodata > nul
+	robocopy "%roaming%\Adobe\Acrobat\DC\Stamps" "%worDir%\Adobe\Stamps" *.* /E > nul
+	robocopy "%roaming%\Adobe\Acrobat\DC\Security" "%worDir%\Adobe\Security" appearance.acrodata > nul
 )
 
 :: Export Power Plan & Lid Configurations
@@ -230,8 +236,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command "$fontList=((Invoke-WebRe
 
 :: Export Wallpaper Data
 echo Exporting Wallpaper..
-if exist "C:\Users\%uName%\AppData\Roaming\Microsoft\Windows\Themes\TranscodedWallpaper" (
-	robocopy "C:\Users\%uName%\AppData\Roaming\Microsoft\Windows\Themes" "%worDir%\Wallpaper" /E /MT:16 /R:3 /W:1 /XJ > nul
+if exist "%roaming%\Microsoft\Windows\Themes\TranscodedWallpaper" (
+	robocopy "%roaming%\Microsoft\Windows\Themes" "%worDir%\Wallpaper" /E /MT:16 /R:3 /W:1 /XJ > nul
 	cd %worDir%\Wallpaper
     ren TranscodedWallpaper TranscodedWallpaper.jpg
 ) else (
@@ -303,6 +309,10 @@ if not exist "!importDir!" (
 	echo Unable to locate directory; try again
 	goto importUser
 	)
+	
+:: Set variables
+set "roaming=C:\Users\%uName%\AppData\Roaming"
+set "local=C:\Users\%uName%\AppData\Local"
 
 :: Close any applications correlated with imported data
 %SystemRoot%\System32\choice.exe /C YN /N /M "To import succesfully, all relevant applications must be closed. Force close applications? (y/n) "
@@ -325,9 +335,9 @@ if "%killTasks%" equ "y" (
 
 :: Import M365 Data
 echo Importing Microsoft 365 data (templates, signatures, User MRU)
-robocopy "%importDir%\Signatures" "C:\Users\%uName%\AppData\Roaming\Microsoft\Signatures" /E /MT:16 /R:3 /W:1 /XJ > nul
-robocopy "%importDir%\Templates" "C:\Users\%uName%\AppData\Roaming\Microsoft\Templates" /E /MT:16 /R:3 /W:1 /XJ > nul 
-robocopy "%importDir%\MicrosoftNotes" "C:\Users\%uName%\AppData\Local\Packages\Microsoft.MicrosoftStickyNotes_8wekyb3d8bbwe\LocalState" plum.sqlite settings.json > nul
+robocopy "%importDir%\Signatures" "%roaming%\Microsoft\Signatures" /E /MT:16 /R:3 /W:1 /XJ > nul
+robocopy "%importDir%\Templates" "%roaming%\Microsoft\Templates" /E /MT:16 /R:3 /W:1 /XJ > nul 
+robocopy "%importDir%\MicrosoftNotes" "%local%\Packages\Microsoft.MicrosoftStickyNotes_8wekyb3d8bbwe\LocalState" plum.sqlite settings.json > nul
 if "%opt%" equ "1" (
 	reg import "%importDir%\Word_MRU.reg" > nul 2>&1
 	reg import "%importDir%\Excel_MRU.reg" > nul 2>&1
@@ -347,31 +357,31 @@ if "%opt%" equ "2" (
 
 :: Import Quick Access / Favorites (File Explorer)
 echo Importing Quick Access / Favorites (File Explorer)
-mkdir "C:\Users\%uName%\AppData\Roaming\Microsoft\Windows\Recent\AutomaticDestinations" > nul 2>&1
-mkdir "C:\Users\%uName%\AppData\Roaming\Microsoft\Windows\Recent\CustomDestinations" > nul 2>&1
-robocopy "%importDir%\QuickAccess\AutomaticDestinations" "C:\Users\%uName%\AppData\Roaming\Microsoft\Windows\Recent\AutomaticDestinations" *.* /E > nul 
-robocopy "%importDir%\QuickAccess\CustomDestinations" "C:\Users\%uName%\AppData\Roaming\Microsoft\Windows\Recent\CustomDestinations" *.* /E > nul
+mkdir "%roaming%\Microsoft\Windows\Recent\AutomaticDestinations" > nul 2>&1
+mkdir "%roaming%\Microsoft\Windows\Recent\CustomDestinations" > nul 2>&1
+robocopy "%importDir%\QuickAccess\AutomaticDestinations" "%roaming%\Microsoft\Windows\Recent\AutomaticDestinations" *.* /E > nul 
+robocopy "%importDir%\QuickAccess\CustomDestinations" "%roaming%\Microsoft\Windows\Recent\CustomDestinations" *.* /E > nul
 start "" /B explorer.exe
 
 :: Import Google Chrome Data
 echo Importing Google Chrome Data..
-robocopy "%importDir%\Chrome" "C:\Users\%uName%\AppData\Local\Google\Chrome\User Data" /E /MT:16 /R:3 /W:1 /XJ > nul 
+robocopy "%importDir%\Chrome" "%local%\Google\Chrome\User Data" /E /MT:16 /R:3 /W:1 /XJ > nul 
 
 :: Import Microsoft Edge Data
 echo Importing Microsoft Edge Data..
-robocopy "%importDir%\Edge" "C:\Users\%uName%\AppData\Local\Microsoft\Edge\User Data\Default" /E /MT:16 /R:3 /W:1 /XJ > nul
+robocopy "%importDir%\Edge" "%local%\Microsoft\Edge\User Data\Default" /E /MT:16 /R:3 /W:1 /XJ > nul
 
 :: Import Mozilla Firefox Data
 echo Importing Mozilla Firefox Data..
-copy "%importDir%\Firefox\installs.ini" "C:\Users\%uName%\AppData\Roaming\Mozilla\Firefox" /E > nul
-copy "%importDir%\Firefox\profiles.ini" "C:\Users\%uName%\AppData\Roaming\Mozilla\Firefox" /E > nul
-robocopy "%importDir%\Firefox\Profiles" "C:\Users\%uName%\AppData\Roaming\Mozilla\Firefox\Profiles" /E /MT:16 /R:3 /W:1 /XJ > nul 
+copy "%importDir%\Firefox\installs.ini" "%roaming%\Mozilla\Firefox" /E > nul
+copy "%importDir%\Firefox\profiles.ini" "%roaming%\Mozilla\Firefox" /E > nul
+robocopy "%importDir%\Firefox\Profiles" "%roaming%\Mozilla\Firefox\Profiles" /E /MT:16 /R:3 /W:1 /XJ > nul 
 
 :: Export Adobe Stamps & signatures
-if exist "C:\Users\%uName%\AppData\Roaming\Adobe" (
+if exist "%roaming%\Adobe" (
 	echo Exporting Adobe Acrobat Stamps and Signature data..
-	robocopy "%importDir%\Adobe\Stamps" "C:\Users\%uName%\AppData\Roaming\Adobe\Acrobat\DC\Stamps" *.* /E > nul
-	robocopy "%importDir%\Adobe\Security" "C:\Users\%uName%\AppData\Roaming\Adobe\Acrobat\DC\Security" appearance.acrodata > nul
+	robocopy "%importDir%\Adobe\Stamps" "%roaming%\Adobe\Acrobat\DC\Stamps" *.* /E > nul
+	robocopy "%importDir%\Adobe\Security" "%roaming%\Adobe\Acrobat\DC\Security" appearance.acrodata > nul
 	if "%opt%" equ "1" (
 		reg import "%importDir%\Acrobat_Annots.reg" > nul 2>&1
 		reg import "%importDir%\Acrobat_Security.reg" > nul 2>&1
