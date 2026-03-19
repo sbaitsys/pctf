@@ -115,6 +115,7 @@ if %errorLevel% neq 0 (
     powershell -Command "Start-Process '%~f0' -ArgumentList 'export', '%worDir%', '%uName%', '%opt%' -Verb runAs"
     exit /b
 )
+
 :: Check if Downloads Folder is required
 %SystemRoot%\System32\choice.exe /C YN /N /M "Is the Downloads folder required? (y/n) "
 if errorlevel 1 set dlReq=y
@@ -145,7 +146,6 @@ if "%opt%" equ "3" (
 )
 if "%opt%" equ "4" (
 	for /f "delims=" %%S in ('powershell -NoProfile -Command "$p='C:\Users\!uName!'; Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\*' | Where-Object { $_.ProfileImagePath -ieq $p } | Select-Object -ExpandProperty PSChildName"') do set "SID=%%S"
-	echo !SID!
 	reg export "HKU\!SID!\Software\Microsoft\Office\16.0\Word\User MRU" "%worDir%\Word_MRU.reg" /y > nul 2>&1
 	reg export "HKU\!SID!\Software\Microsoft\Office\16.0\Excel\User MRU" "%worDir%\Excel_MRU.reg" /y > nul 2>&1
 	reg export "HKU\!SID!\Software\Microsoft\Office\16.0\PowerPoint\User MRU" "%worDir%\PowerPoint_MRU.reg" /y > nul 2>&1
@@ -267,10 +267,10 @@ set "CONFIG_FILE=%worDir%\Printers\PrinterConfig.csv"
 
 if not exist "%DRIVER_DIR%" mkdir "%DRIVER_DIR%" >nul
 echo Exporting printer installations..
-powershell -NoProfile -Command "Get-Printer | Where-Object { $_.Name -notmatch 'Microsoft|PDF|OneNote|Remote Desktop|Adobe|DYMO|Brother QL' } | Select-Object -ExpandProperty Name | Set-Content -Path '%PRINTER_LIST%' -Encoding ASCII"
-powershell -Command "Get-Printer | Where-Object { $_.Name -notmatch 'Microsoft|PDF|OneNote|Remote Desktop|Adobe|DYMO|Brother QL' } | Export-Csv -Path \"%CONFIG_FILE%\" -NoTypeInformation"
+powershell -NoProfile -Command "Get-Printer | Where-Object { $_.Name -notmatch 'Microsoft|PDF|OneNote|Remote Desktop|Adobe|DYMO|Brother QL|Generic' } | Select-Object -ExpandProperty Name | Set-Content -Path '%PRINTER_LIST%' -Encoding ASCII"
+powershell -Command "Get-Printer | Where-Object { $_.Name -notmatch 'Microsoft|PDF|OneNote|Remote Desktop|Adobe|Zebra|DYMO|Brother QL|Generic' } | Export-Csv -Path \"%CONFIG_FILE%\" -NoTypeInformation"
 echo Exporting third-party drivers..
-powershell -Command "Get-PrinterDriver | Where-Object { $_.InfPath -and (Test-Path $_.InfPath) -and ($_.Name -notmatch 'Microsoft|PDF|OneNote|Remote Desktop|Adobe|DYMO|Brother QL') } | ForEach-Object { $source = Split-Path $_.InfPath -Parent; $dest = Join-Path \"%DRIVER_DIR%\" $_.Name; Copy-Item -Path $source -Destination $dest -Recurse -Force }"
+powershell -Command "Get-PrinterDriver | Where-Object { $_.InfPath -and (Test-Path $_.InfPath) -and ($_.Name -notmatch 'Microsoft|PDF|OneNote|Zebra|Remote Desktop|Adobe|DYMO|Brother QL|Generic') } | ForEach-Object { $source = Split-Path $_.InfPath -Parent; $dest = Join-Path \"%DRIVER_DIR%\" $_.Name; Copy-Item -Path $source -Destination $dest -Recurse -Force }"
 echo Exporting printer configurations..
 if not exist "%worDir%\Printers\Configurations" mkdir "%worDir%\Printers\Configurations"
 for /f "usebackq delims=" %%A in ("%PRINTER_LIST%") do (
