@@ -1,20 +1,27 @@
 @echo off
 setlocal enabledelayedexpansion
 setlocal enableextensions
+echo ==================================================
 echo    ___  _______________
 echo   / _ \/ ___/_  __/ __/
 echo  / ___/ /__  / / / _/   
 echo /_/   \___/ /_/ /_/    
 echo.
-echo PC Transfer Tool v1.2 -- Developed by Samuel Bunko
+echo PC Transfer Tool v1.3 -- Developed by Samuel Bunko
+echo ==================================================
 if "%1"=="export" (
+	echo Export Agent
+	echo ==================================================
 	echo Relaunched with elevated privileges...
     set "worDir=%2"
 	set "uName=%3"
 	set "opt=%4"
+
     goto exportUser
 )
 if "%1"=="importUser" (
+	echo Import Agent
+	echo ==================================================
     echo Relaunched with elevated privileges...
 	set "uName=%2"
 	set "opt=%3"
@@ -125,6 +132,8 @@ if errorlevel 2 set dlReq=n
 %SystemRoot%\System32\choice.exe /C YN /N /M "Would you like to export printers? (y/n) "
 if errorlevel 1 set prReq=y
 if errorlevel 2 set prReq=n
+echo ==================================================
+echo Commencing export - stand back!
 
 ::Set variables
 set "roaming=C:\Users\%uName%\AppData\Roaming"
@@ -312,7 +321,9 @@ if not exist "!importDir!" (
 	echo Unable to locate directory; try again
 	goto importUser
 	)
-	
+echo ==================================================
+echo Commencing import - stand back!
+
 :: Set variables
 set "roaming=C:\Users\%uName%\AppData\Roaming"
 set "local=C:\Users\%uName%\AppData\Local"
@@ -468,34 +479,26 @@ if not exist "%PRINTER_CONFS%" (
     echo No configurations folder found: %PRINTER_CONFS%
     goto postMDT
 )
-:: set "RUNDLL=%SystemRoot%\System32\rundll32.exe"
-:: if exist %SystemRoot%\Sysnative\rundll32.exe set "RUNDLL=%SystemRoot%\Sysnative\rundll32.exe"
-:: for /f "usebackq delims=" %%A in ("%PRINTER_LIST%") do (
-::     call :impoSpecificPrinter "%%~A"
-:: )
-goto postMDT
+
+echo Importing Printer Settings..
+set "RUNDLL=%SystemRoot%\System32\rundll32.exe"
+if exist %SystemRoot%\Sysnative\rundll32.exe set "RUNDLL=%SystemRoot%\Sysnative\rundll32.exe"
+for %%P in ("%PRINTER_CONFS%\*.dat") do (
+	call :impoSpecificPrinter "%%~fP"
+)
+
+pause
 
 :impoSpecificPrinter
-set "PN=%~1"
-set "PN=%PN:"=%"
-
-:: Build the sanitized filename
-set "FN=%PN%"
-set "FN=%FN:\=_%"
-set "FN=%FN:/=_%"
-set "FN=%FN::=_%"
-set "FN=%FN:?=_%"
-set "FN=%FN:<=_%"
-set "FN=%FN:>=_%"
-set "FN=%FN:|=_%"
-
-if exist "%PRINTER_CONFS%\%FN%.dat" (
-    "%RUNDLL%" printui.dll,PrintUIEntry /Sr /n "!PN!" /a "!DAT!" m c u d g >nul 2>&1
+if exist "%~1" (
+    "%RUNDLL%" printui.dll,PrintUIEntry /Sr /q /n "%~n1" /a "%~1" m c d g >nul 2>&1
 	if %errorlevel%==0 (
-		echo Restored configuration for !PN!
+		echo Restored configuration for %~1
+	) else (
+		echo Error
 	)
 ) else (
-    echo No export file for "%PN%" (expected "%PRINTER_CONFS%\%FN%.dat")
+    echo No configuration file for "%~1"
 )
 exit /b
 
