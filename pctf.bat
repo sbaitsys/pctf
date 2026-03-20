@@ -548,24 +548,40 @@ for /d %%G in ("C:\Users\%uName%\OneDrive - *") do set "OneDriveDir=%%~fG"
 if exist "%OneDriveDir%" (
 	echo OneDrive Directory Located: %OneDriveDir%
 	%SystemRoot%\System32\choice.exe /C YN /N /M "Would you like to ZIP contents there instead? (y/n)"
-	if errorlevel 1 set "zipLocation=%OneDriveDir%" && set "backupOneDrive=y"
-	if errorlevel 2 set "zipLocation=%worDir%" && set "backupOneDrive=n"
+	if errorlevel 2 set "backupOneDrive=n"
+	if errorlevel 1 set "backupOneDrive=y"
 )
 for %%F in ("%worDir%") do set "zipName=%%~nF.zip"
-echo Creating .zip archive for !zipName!..
-if %backupOneDrive% equ "y" (
-	tar.exe -a -c -f  "%OneDriveDir%\%zipName%" -C "%worDir%\" *
+if /I "%backupOneDrive%"=="y" (
+	echo Creating .zip archive for %OneDriveDir%\%zipName%..
+	cd "%OneDriveDir%"
+	tar.exe -a -c -f  "%OneDriveDir%\%zipName%" -C "%worDir%" *
+	
+	if errorlevel 1 (
+		echo [ERROR] tar.exe failed to create the archive. Aborting.
+		exit /b 1
+	)
+
 	set "exportLoc=%OneDriveDir%\%zipName%"
-	rmdir /s /q "!worDir!"
-) else (
-	cd !worDir!\..
+	rmdir /s /q "%worDir%"
+) 
+if /I "%backupOneDrive%"=="n" (
+	echo Creating .zip archive for %worDir%\%zipName%..
+	cd "!worDir!\.."
 	tar.exe -a -c -f  "%zipName%" -C "%worDir%" *
 	set "exportLoc=%worDir%\%zipName%"
 	cd ..
-	rmdir /s /q "!worDir!"
+	
+	if errorlevel 1 (
+		echo [ERROR] tar.exe failed to create the archive. Aborting.
+		exit /b 1
+	)
+
+	rmdir /s /q "%worDir%"
 )
 
 :: Announce export completion.
+
 echo Export complete - export saved to %exportLoc%.
 echo Ensure to copy the .zip created above to the new workstation and extract the archive prior to commencing the import portion of this script.
 timeout /t 30
