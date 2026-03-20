@@ -7,7 +7,7 @@ echo   / _ \/ ___/_  __/ __/
 echo  / ___/ /__  / / / _/   
 echo /_/   \___/ /_/ /_/    
 echo.
-echo PC Transfer Tool v1.3 -- Developed by Samuel Bunko
+echo PC Transfer Tool v1.3.1 -- Developed by Samuel Bunko
 echo ==================================================
 if "%1"=="export" (
 	echo Export Agent
