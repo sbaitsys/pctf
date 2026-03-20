@@ -81,15 +81,14 @@ if /i "%userprofile%" equ "C:\Windows\system32\config\systemprofile" (
 			if "%opt%" equ "4" goto exportUser
 		)
 	)
-
-if exist "C:\Users\%USERNAME%\" (
-		echo Working in directory %userprofile%..
-		set uName=%USERNAME%
-		if "%opt%" equ "1" goto importUser
-		if "%opt%" equ "2" goto importUser
-		if "%opt%" equ "3" goto exportUser
-		if "%opt%" equ "4" goto exportUser
-	)
+)
+if exist "C:\Users\%USERNAME%" (
+	echo Working in directory %userprofile%..
+	set "uName=%USERNAME%"
+	if "%opt%" equ "1" goto importUser
+	if "%opt%" equ "2" goto importUser
+	if "%opt%" equ "3" goto exportUser
+	if "%opt%" equ "4" goto exportUser
 )
 
 :: Configuring working directory for user export
@@ -215,7 +214,7 @@ for /f "tokens=1 delims=() " %%B in ("!REST!") do set "ACTIVE_GUID=%%B"
 set "ACTIVE_GUID=%ACTIVE_GUID: =%"
 mkdir "%worDir%\Power" 2>nul
 powercfg /export "%worDir%\Power\active_powerplan.pow" %ACTIVE_GUID%
-powercfg /q > "%worDir%\Power\powercfg_dump.txt
+powercfg /q > "%worDir%\Power\powercfg_dump.txt"
 
 :: Export Accessibility niceties - StickyKeys, ToggleKeys, FilterKeys, MouseKeys, HighContrast, SoundSentry, keyboard response timings, Pointer scheme & per-cursor file overrides, Caret blink rate/width, menu/show delays, font smoothing, scaling preferences, Ease-of-Access app preferences.
 echo Exporting Accessibility niceties..
@@ -244,7 +243,7 @@ if "%dlReq%" equ "y" (
 :: Export third-party font files
 echo Copying font files..
 if not exist "%worDir%\Fonts" mkdir "%worDir%\Fonts"
-powershell -NoProfile -ExecutionPolicy Bypass -Command "$fontList=((Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/sbaitsys/pctf/main/fonts.txt' -UseBasicParsing).Content -split '\r?\n' | ForEach-Object { $_.Trim().ToLower() } | Where-Object { $_ }); $dest=if([string]::IsNullOrWhiteSpace('%workDir%')){ Join-Path $PWD 'Fonts' } else { Join-Path '%workDir%' 'Fonts' }; if(-not (Test-Path -LiteralPath $dest)){ New-Item -ItemType Directory -Path $dest | Out-Null }; Get-ChildItem 'C:\Windows\Fonts' -Include *.ttf,*.ttc,*.otf,*.fon -File -Force | ForEach-Object { if($fontList -notcontains $_.Name.ToLower()){ Copy-Item -LiteralPath $_.FullName -Destination $dest -Force -ErrorAction SilentlyContinue } }"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$fontList=((Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/sbaitsys/pctf/main/fonts.txt' -UseBasicParsing).Content -split '\r?\n' | ForEach-Object { $_.Trim().ToLower() } | Where-Object { $_ }); $dest=if([string]::IsNullOrWhiteSpace('%worDir%')){ Join-Path $PWD 'Fonts' } else { Join-Path '%worDir%' 'Fonts' }; if(-not (Test-Path -LiteralPath $dest)){ New-Item -ItemType Directory -Path $dest | Out-Null }; Get-ChildItem 'C:\Windows\Fonts' -Include *.ttf,*.ttc,*.otf,*.fon -File -Force | ForEach-Object { if($fontList -notcontains $_.Name.ToLower()){ Copy-Item -LiteralPath $_.FullName -Destination $dest -Force -ErrorAction SilentlyContinue } }"
 
 :: Export Wallpaper Data
 echo Exporting Wallpaper..
@@ -311,12 +310,14 @@ exit /b
 net session >nul 2>&1
 if %errorLevel% neq 0 (
     echo Requesting administrator privileges...
+	echo %uName%
+	echo %opt%
     powershell -Command "Start-Process '%~f0' -ArgumentList 'importUser', '%uName%', '%opt%' -Verb runAs"
     exit /b
 )
 
 :: Check if Import Directory exists
-set /p importDir=Enter the FULL filepath containing the exported user data: 
+set /p "importDir=Enter the FULL filepath containing the exported user data: "
 if not exist "!importDir!" (
 	echo Unable to locate directory; try again
 	goto importUser
