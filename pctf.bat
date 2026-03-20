@@ -81,7 +81,7 @@ if /i "%userprofile%" equ "C:\Windows\system32\config\systemprofile" (
 			if "%opt%" equ "4" goto exportUser
 		)
 	)
-) 
+
 if exist "C:\Users\%USERNAME%\" (
 		echo Working in directory %userprofile%..
 		set uName=%USERNAME%
@@ -375,7 +375,7 @@ mkdir "%roaming%\Microsoft\Windows\Recent\AutomaticDestinations" > nul 2>&1
 mkdir "%roaming%\Microsoft\Windows\Recent\CustomDestinations" > nul 2>&1
 robocopy "%importDir%\QuickAccess\AutomaticDestinations" "%roaming%\Microsoft\Windows\Recent\AutomaticDestinations" *.* /E > nul 
 robocopy "%importDir%\QuickAccess\CustomDestinations" "%roaming%\Microsoft\Windows\Recent\CustomDestinations" *.* /E > nul
-start "" /B explorer.exe
+start explorer.exe
 
 :: Import Google Chrome Data
 echo Importing Google Chrome Data..
@@ -543,15 +543,29 @@ exit
 
 :: ZIP Export
 :zip
+for /d %%G in ("C:\Users\%uName%\OneDrive - *") do set "OneDriveDir=%%~fG"
+if exist "%OneDriveDir%" (
+	echo OneDrive Directory Located: %OneDriveDir%
+	%SystemRoot%\System32\choice.exe /C YN /N /M "Would you like to ZIP contents there instead? (y/n)"
+	if errorlevel 1 set "zipLocation=%OneDriveDir%" && set "backupOneDrive=y"
+	if errorlevel 2 set "zipLocation=%worDir%" && set "backupOneDrive=n"
+)
 for %%F in ("%worDir%") do set "zipName=%%~nF.zip"
 echo Creating .zip archive for !zipName!..
-cd !worDir!\..
-tar.exe -a -c -f  "!worDir!.zip" -C "%worDir%" *
-cd ..
-rmdir /s /q "!worDir!"
+if %backupOneDrive% equ "y" (
+	tar.exe -a -c -f  "%OneDriveDir%\%zipName%" -C "%worDir%\" *
+	set "exportLoc=%OneDriveDir%\%zipName%"
+	rmdir /s /q "!worDir!"
+) else (
+	cd !worDir!\..
+	tar.exe -a -c -f  "%zipName%" -C "%worDir%" *
+	set "exportLoc=%worDir%\%zipName%"
+	cd ..
+	rmdir /s /q "!worDir!"
+)
 
 :: Announce export completion.
-echo Export complete.
+echo Export complete - export saved to %exportLoc%.
 echo Ensure to copy the .zip created above to the new workstation and extract the archive prior to commencing the import portion of this script.
 timeout /t 30
 exit
