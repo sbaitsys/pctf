@@ -121,7 +121,7 @@ if %errorLevel% neq 0 (
     powershell -Command "Start-Process '%~f0' -ArgumentList 'export', '%worDir%', '%uName%', '%opt%' -Verb runAs"
     exit /b
 )
-
+echo %uName% > %worDir%\oldUsername.txt
 :: Check if Downloads Folder is required
 %SystemRoot%\System32\choice.exe /C YN /N /M "Is the Downloads folder required? (y/n) "
 if errorlevel 1 set dlReq=y
@@ -328,6 +328,10 @@ echo Commencing import - stand back!
 :: Set variables
 set "roaming=C:\Users\%uName%\AppData\Roaming"
 set "local=C:\Users\%uName%\AppData\Local"
+set /p "oldUsername=<%importDir%\oldUsername.txt"
+
+:: Creating compatibility junction for Quick Access, MRU and other
+mklink /J "C:\Users\%oldUsername%" "C:\Users\%uName%"
 
 :: Close any applications correlated with imported data
 %SystemRoot%\System32\choice.exe /C YN /N /M "To import succesfully, all relevant applications must be closed. Force close applications? (y/n) "
