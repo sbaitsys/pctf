@@ -310,8 +310,6 @@ exit /b
 net session >nul 2>&1
 if %errorLevel% neq 0 (
     echo Requesting administrator privileges...
-	echo %uName%
-	echo %opt%
     powershell -Command "Start-Process '%~f0' -ArgumentList 'importUser', '%uName%', '%opt%' -Verb runAs"
     exit /b
 )
@@ -328,10 +326,12 @@ echo Commencing import - stand back!
 :: Set variables
 set "roaming=C:\Users\%uName%\AppData\Roaming"
 set "local=C:\Users\%uName%\AppData\Local"
-set /p "oldUsername=<%importDir%\oldUsername.txt"
+set /p oldUsername=<"%importDir%\oldUsername.txt"
 
-:: Creating compatibility junction for Quick Access, MRU and other
-mklink /J "C:\Users\%oldUsername%" "C:\Users\%uName%"
+:: Creating compatibility junction for Quick Access, MRU and other if old username is different
+if not %oldusername% == %uName% (
+	mklink /J "C:\Users\%oldUsername%" "C:\Users\%uName%"
+)
 
 :: Close any applications correlated with imported data
 %SystemRoot%\System32\choice.exe /C YN /N /M "To import succesfully, all relevant applications must be closed. Force close applications? (y/n) "
