@@ -7,7 +7,7 @@ echo   / _ \/ ___/_  __/ __/
 echo  / ___/ /__  / / / _/   
 echo /_/   \___/ /_/ /_/    
 echo.
-echo PC Transfer Tool v1.3.1 -- Developed by Samuel Bunko
+echo PC Transfer Tool v1.3.2 -- Developed by Samuel Bunko
 echo ==================================================
 if "%1"=="export" (
 	echo Export Agent
@@ -135,6 +135,7 @@ echo ==================================================
 echo Commencing export - stand back!
 
 ::Set variables
+set "userDir=C:\Users\%uName%"
 set "roaming=C:\Users\%uName%\AppData\Roaming"
 set "local=C:\Users\%uName%\AppData\Local"
 
@@ -186,6 +187,20 @@ echo Exporting Mozilla Firefox data..
 copy /Y "%roaming%\Mozilla\Firefox\installs.ini" "%worDir%\Firefox\installs.ini" > nul
 copy /Y "%roaming%\Mozilla\Firefox\profiles.ini" "%worDir%\Firefox\profiles.ini" > nul
 robocopy "%roaming%\Mozilla\Firefox\Profiles" "%worDir%\Firefox\Profiles" /E /MT:16 /R:3 /W:1 /XJ /XD "shader-cache" "saved-telemetry-pings" "crashes" > nul
+
+:: Export local/unsynced Documents/Desktop/Pictures folders if found
+if exist "%userDir%\Documents" (
+	echo Exporting local/non-synced %userDir%\Documents\ folder
+	robocopy "%userDir%\Documents" "%worDir%\Documents" /E /MT:16 /R:3 /W:1 /XJ > nul
+)
+if exist "%userDir%\Desktop" (
+	echo Exporting local/non-synced %userDir%\Desktop\ folder
+	robocopy "%userDir%\Desktop" "%worDir%\Desktop" /E /MT:16 /R:3 /W:1 /XJ > nul
+)
+if exist "%userDir%\Pictures" (
+	echo Exporting local/non-synced %userDir%\Pictures\ folder
+	robocopy "%userDir%\Pictures" "%worDir%\Pictures" /E /MT:16 /R:3 /W:1 /XJ > nul
+)
 
 :: Export Adobe Stamps & signatures
 if exist "%roaming%\Adobe" (
@@ -324,6 +339,7 @@ echo ==================================================
 echo Commencing import - stand back!
 
 :: Set variables
+set "userDir=C:\Users\%uName%"
 set "roaming=C:\Users\%uName%\AppData\Roaming"
 set "local=C:\Users\%uName%\AppData\Local"
 set /p oldUsername=<"%importDir%\oldUsername.txt"
@@ -447,11 +463,24 @@ if exist "%importDir%\Wallpaper\TranscodedWallpaper.jpg" (
 	echo Updated wallpaper.
 )
 
-:: Import Downloads Folder
+:: Import Desktop\Documents\Pictures\Downloads Folder
 if exist "%importDir%\Downloads" (
 	echo Importing Downloads Folder 
-	robocopy "%importDir%\Downloads" "C:\Users\%uName%\Downloads" /E /MT:16 /R:3 /W:1 /XJ > nul 
+	robocopy "%importDir%\Downloads" "%userDir%\Downloads" /E /MT:16 /R:3 /W:1 /XJ > nul 
 )
+if exist "%importDir%\Desktop" (
+	echo Importing Desktop Folder 
+	robocopy "%importDir%\Desktop" "%userDir%\Desktop" /E /MT:16 /R:3 /W:1 /XJ > nul 
+)
+if exist "%importDir%\Documents" (
+	echo Importing Documents Folder 
+	robocopy "%importDir%\Documents" "%userDir%\Documents" /E /MT:16 /R:3 /W:1 /XJ > nul 
+)
+if exist "%importDir%\Pictures" (
+	echo Importing Pictures Folder 
+	robocopy "%importDir%\Pictures" "%userDir%\Pictures" /E /MT:16 /R:3 /W:1 /XJ > nul 
+)
+
 
 :: Import third party Font files
 echo Installing font files..
@@ -548,6 +577,21 @@ exit
 
 :: ZIP Export
 :zip
+if NOT "%userprofile%"=="C:\Windows\system32\config\systemprofile" (
+	echo ==================================================
+	echo WARNING: Before zipping the final contents, Please
+	echo remember to export any saved Chrome/Edge passwords
+	echo manually.
+	echo ==================================================
+) else (
+	echo ==================================================
+	echo WARNING: Please remember to export any saved
+	echo Chrome/Edge passwords manually. You need to be
+	echo logged into the end user's account to achieve this.
+	echo ==================================================
+)
+%SystemRoot%\System32\choice.exe /C YN /N /M "Please confirm you acknowledge the above by entering either y/n. (Or, go export it to %worDir% before proceeding!)"
+
 for /d %%G in ("C:\Users\%uName%\OneDrive - *") do set "OneDriveDir=%%~fG"
 if exist "%OneDriveDir%" (
 	echo OneDrive Directory Located: %OneDriveDir%
