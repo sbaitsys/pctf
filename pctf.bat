@@ -205,15 +205,15 @@ if exist "%userDir%\Pictures" (
 :: Export Adobe Stamps & signatures
 if exist "%roaming%\Adobe" (
 	echo Exporting Adobe Acrobat Stamps and Signature data..
-	mkdir "%worDir%\Adobe"
-	mkdir "%worDir%\Adobe\Stamps"
-	mkdir "%worDir%\Adobe\Security"
+	if not exist "%worDir%\Adobe" mkdir "%worDir%\Adobe" > nul 2>&1
+	if not exist "%worDir%\Adobe\Stamps" mkdir "%worDir%\Adobe\Stamps" > nul 2>&1
+	if not exist "%worDir%\Adobe"\Security mkdir "%worDir%\Adobe\Security" > nul 2>&1
 	if "%opt%" equ "3" (
 		reg export "HKCU\Software\Adobe\Adobe Acrobat\DC\Annots" "%worDir%\Adobe\Acrobat_Annots.reg" /y > nul 2>&1
 		reg export "HKCU\Software\Adobe\Adobe Acrobat\DC\Security" "%worDir%\Adobe\Acrobat_Security.reg" /y > nul 2>&1
 	)
 	if "%opt%" equ "4" (
-		for /f "delims=" %%S in ('powershell -NoProfile -Command "$p='C:\Users\!uName!'; Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\*' | Where-Object { $_.ProfileImagePath -ieq $p } | Select-Object -ExpandProperty PSChildName"') do set "SID=%%S"
+		for /f "delims=" %%S in ('powershell -NoProfile -Command "$p='C:\Users\!uName!'; Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\*' | Where-Object { $_.ProfileImagePath -ieq $p } | Select-Object -ExpandProperty PSChildName"') do set "SID=%%S" > nul 2>&1
 		echo !SID!
 		reg export "HKU\!SID!\Software\Adobe\Adobe Acrobat\DC\Annots" "%worDir%\Adobe\Acrobat_Annots.reg" /y > nul 2>&1
 		reg export "HKU\!SID!\Software\Adobe\Adobe Acrobat\DC\Security" "%worDir%\Adobe\Acrobat_Security.reg" /y > nul 2>&1
@@ -227,7 +227,7 @@ echo Exporting Power Plan and Lid Configurations..
 for /f "tokens=2 delims=:" %%A in ('powercfg /getactivescheme') do set "REST=%%A"
 for /f "tokens=1 delims=() " %%B in ("!REST!") do set "ACTIVE_GUID=%%B"
 set "ACTIVE_GUID=%ACTIVE_GUID: =%"
-mkdir "%worDir%\Power" 2>nul
+if not exist "%worDir%\Power" mkdir "%worDir%\Power" 2>nul
 powercfg /export "%worDir%\Power\active_powerplan.pow" %ACTIVE_GUID%
 powercfg /q > "%worDir%\Power\powercfg_dump.txt"
 
@@ -241,8 +241,7 @@ if "%opt%" equ "3" (
 	reg export "HKCU\Software\Microsoft\Accessibility" "%worDir%\Accessibility\MS_Accessibility.reg" /y > nul 2>&1
 )
 if "%opt%" equ "4" (
-	for /f "delims=" %%S in ('powershell -NoProfile -Command "$p='C:\Users\!uName!'; Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\*' | Where-Object { $_.ProfileImagePath -ieq $p } | Select-Object -ExpandProperty PSChildName"') do set "SID=%%S"
-	echo !SID!
+	for /f "delims=" %%S in ('powershell -NoProfile -Command "$p='C:\Users\!uName!'; Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\*' | Where-Object { $_.ProfileImagePath -ieq $p } | Select-Object -ExpandProperty PSChildName"') do set "SID=%%S" > nul 2>&1
 	reg export "HKU\!SID!\Control Panel\Accessibility" "%worDir%\Accessibility\Accessibility.reg" /y > nul 2>&1
 	reg export "HKU\!SID!\Control Panel\Cursors" "%worDir%\Accessibility\Cursors.reg" /y > nul 2>&1
 	reg export "HKU\!SID!\Control Panel\Desktop" "%worDir%\Accessibility\Desktop.reg" /y > nul 2>&1
@@ -256,23 +255,23 @@ if "%dlReq%" equ "y" (
 )
 
 :: Export third-party font files
-echo Copying font files..
+echo Exporting font files..
 if not exist "%worDir%\Fonts" mkdir "%worDir%\Fonts"
 powershell -NoProfile -ExecutionPolicy Bypass -Command "$fontList=((Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/sbaitsys/pctf/main/fonts.txt' -UseBasicParsing).Content -split '\r?\n' | ForEach-Object { $_.Trim().ToLower() } | Where-Object { $_ }); $dest=if([string]::IsNullOrWhiteSpace('%worDir%')){ Join-Path $PWD 'Fonts' } else { Join-Path '%worDir%' 'Fonts' }; if(-not (Test-Path -LiteralPath $dest)){ New-Item -ItemType Directory -Path $dest | Out-Null }; Get-ChildItem 'C:\Windows\Fonts' -Include *.ttf,*.ttc,*.otf,*.fon -File -Force | ForEach-Object { if($fontList -notcontains $_.Name.ToLower()){ Copy-Item -LiteralPath $_.FullName -Destination $dest -Force -ErrorAction SilentlyContinue } }"
 
 :: Export Wallpaper Data
 echo Exporting Wallpaper..
 if exist "%roaming%\Microsoft\Windows\Themes\TranscodedWallpaper" (
-	robocopy "%roaming%\Microsoft\Windows\Themes" "%worDir%\Wallpaper" /E /MT:16 /R:3 /W:1 /XJ > nul
+	robocopy "%roaming%\Microsoft\Windows\Themes" "%worDir%\Wallpaper" /E /MT:16 /R:3 /W:1 /XJ > nul 2>&1
 	cd %worDir%\Wallpaper
-    ren TranscodedWallpaper TranscodedWallpaper.jpg
+    ren TranscodedWallpaper TranscodedWallpaper.jpg > nul 2>&1
 ) else (
     echo No wallpaper found. Skipping.
 )
 
 :: Export Wi-Fi Profiles
 echo Exporting WiFi profiles..
-if not exist "%worDir%\WiFiProfiles" mkdir "%worDir%\WiFiProfiles"
+if not exist "%worDir%\WiFiProfiles" mkdir "%worDir%\WiFiProfiles" > nul
 netsh wlan export profile key=clear folder="%worDir%\WiFiProfiles" > nul
 if "%prReq%" equ "y" (
 	echo Moving onto printer export..
@@ -593,14 +592,9 @@ if NOT "%userprofile%"=="C:\Windows\system32\config\systemprofile" (
 %SystemRoot%\System32\choice.exe /C YN /N /M "Please confirm you acknowledge the above by entering either y/n. (Or, go export it to %worDir% before proceeding!)"
 
 for /d %%G in ("C:\Users\%uName%\OneDrive - *") do set "OneDriveDir=%%~fG"
+for %%F in ("%worDir%") do set "zipName=%%~nF.zip"
 if exist "%OneDriveDir%" (
 	echo OneDrive Directory Located: %OneDriveDir%
-	%SystemRoot%\System32\choice.exe /C YN /N /M "Would you like to ZIP contents there instead? (y/n)"
-	if errorlevel 2 set "backupOneDrive=n"
-	if errorlevel 1 set "backupOneDrive=y"
-)
-for %%F in ("%worDir%") do set "zipName=%%~nF.zip"
-if /I "%backupOneDrive%"=="y" (
 	echo Creating .zip archive for %OneDriveDir%\%zipName%..
 	cd "%OneDriveDir%"
 	tar.exe -a -c -f  "%OneDriveDir%\%zipName%" -C "%worDir%" *
@@ -612,8 +606,7 @@ if /I "%backupOneDrive%"=="y" (
 
 	set "exportLoc=%OneDriveDir%\%zipName%"
 	rmdir /s /q "%worDir%"
-) 
-if /I "%backupOneDrive%"=="n" (
+) else (
 	echo Creating .zip archive for %worDir%\%zipName%..
 	cd "!worDir!\.."
 	tar.exe -a -c -f  "%zipName%" -C "%worDir%" *
