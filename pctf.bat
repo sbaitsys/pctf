@@ -174,6 +174,7 @@ robocopy "%local%\Google\Chrome\User Data\Default" "%worDir%\Chrome\Default" /E 
 for /D %%G in ("%local%\Google\Chrome\User Data\Profile *") do (
 	robocopy "%%G" "%worDir%\Chrome\%%~nxG" /E /MT:16 /R:3 /W:1 /XJ /XD "Service Worker" "WebStorage" "Cache" "Code Cache" "IndexedDB" "GPUCache" "ShaderCache" "Network" "Safe Browsing Network" "Sessions" /XF "Cookies" "Cookies-journal" "Network Persistent State" "History-journal" "History Provider Cache" "Session_*" "Tabs_*" > nul 2>&1
 )
+copy "%local%\Google\Chrome\User Data\Default\Local State" "%worDir%\Chrome\Default"
 
 :: Export Microsoft Edge Data
 echo Exporting Microsoft Edge data..
